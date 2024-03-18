@@ -33,7 +33,6 @@ int main(){
     
     return 0;
 }
-
 ```
 
 #### Zadanie 2
@@ -58,7 +57,6 @@ int main(){
     
     return 0;
 }
-
 ```
 
 #### Zadanie 3
@@ -108,7 +106,6 @@ int main(){
     
     return 0;
 }
-
 ```
 
 #### Zadanie 8
@@ -215,7 +212,6 @@ int main(){
     
     return 0;
 }
-
 ```
 
 #### Zadanie 13
@@ -287,7 +283,6 @@ int main() {
     
     return 0;
 }
-
 ```
 
 #### Zadanie 15
@@ -310,7 +305,6 @@ int main() {
     
     return 0;
 }
-
 ```
 
 
