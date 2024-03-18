@@ -40,7 +40,7 @@ Napisz program size2 sprawdzający, ile bajtów zajmują typy: char, short, int,
 
 - Rozwiązanie(kod):
 
-```C
+```c
 #include<stdio.h>
 #include<stdlib.h>
 //zadanie domowe
@@ -87,7 +87,7 @@ Jaki obszar pamięci można zaadresować przy pomocy adresów 16, 20, 24, 32, 40
 
 Napisz program bits rozpoznający do ilu bitowego kodu został skompilowany.
 
-```C
+```c
 #include<stdio.h>
 #include<stdlib.h>
 
@@ -193,7 +193,7 @@ bytes = 004 001 000 000
 
 - Rozwiązanie(Kod):
 
-```C
+```c
 #include<stdio.h>
 #include<stdlib.h>
 
@@ -225,7 +225,7 @@ Napisz program endian rozpoznający w jakiej architekturze pracuje procesor.
 
 - Rozwiązanie(Kod):
 
-```C
+```c
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -290,7 +290,7 @@ Napisz program endian2 wypisujący little-endian architecture lub big-endian arc
 
 - Rozwiązanie(Kod):
 
-```C
+```c
 #include <stdio.h>
 
 int main() {
