@@ -8,7 +8,7 @@ Napisz program size sprawdzający, ile bajtów zajmują typy: char, short, int, 
 
 - Rozwiązadnie(kod):
 
-```C
+```c
 #include<stdio.h>
 #include<stdlib.h>
 
