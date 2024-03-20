@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-// Funkcja wyliczaj¹ca wartoœæ wielomianu w sposób klasyczny
+// Funkcja wyliczajÄ…ca wartoÅ›Ä‡ wielomianu w sposÃ³b klasyczny
 int polinomial(unsigned char *p, int n) {
     int result = 0;
     int i;
@@ -10,7 +10,7 @@ int polinomial(unsigned char *p, int n) {
     return result;
 }
 
-// Funkcja wyliczaj¹ca wartoœæ wielomianu schematem Hornera
+// Funkcja wyliczajÄ…ca wartoÅ›Ä‡ wielomianu schematem Hornera
 int horner(unsigned char *p, int n) {
     int result = 0;
     int i;
