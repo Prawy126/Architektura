@@ -8,20 +8,39 @@ a        equ -4
 
 ;        esp -> [a][ret]
 
+b        equ 6
+
+         push b  ; b -> stack
+
          call getaddr  ; push on the stack the run-time address of format and jump to getaddr
 format:
+         db "b = %d" , 0xA
+
          db "a = %d", 0xA, 0
 getaddr:
 
-;         esp -> [format][a][ret]
+;        esp -> [format][b][a][ret]
 
-         call [ebx+3*4]  ; printf(format, a);
+         call [ebx+3*4]  ; printf(format, b);
          add esp, 2*4    ; esp = esp + 8
+
 
 ;        esp -> [ret]
 
          push 0          ; esp -> [00 00 00 00][ret]
          call [ebx+0*4]  ; exit(0);
+
+;        esp -> [format][a][ret]
+
+         call [ebx+3*4]  ; printf(format, a);
+         add esp, 2*4    ; esp = esp + 8
+
+
+;        esp -> [ret]
+
+         push 0          ; esp -> [00 00 00 00][ret]
+         call [ebx+0*4]  ; exit(0);
+
 
 ; asmloader API
 ;

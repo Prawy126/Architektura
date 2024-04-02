@@ -7,7 +7,7 @@ b        equ -6
          
          mov eax, a  ; eax = a
          add eax, b  ; eax = eax + b = a + b
-
+                       
          push eax  ; eax -> stack
          
 ;        esp -> [eax][ret]
