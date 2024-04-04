@@ -2,26 +2,33 @@
 
 ;        esp -> [ret]  ; ret - adres powrotu do asmloader
 
-a        equ 5
-b        equ 10
+liczba   equ -5
 
-         mov eax, a    ; eax = a
-         mov ecx, b    ; ecx = b
-         sub eax, ecx  ; eax = eax - ecx
-
-         push eax  ; eax -> stack
+         mov eax, liczba  ;eax = liczba
+         mov ecx, eax     ;ecx = eax
          
-;        esp -> [eax][ret]
+         cmp eax, 0  ; eax = 0
+         jge nieujemna   ;
+
+         neg ecx  ; ecx = -ecx
+
+nieujemna:
+          
+         push ecx  ; ecx -> stack
+         push eax  ; eax -> stack
+
+;        esp -> [eax][ecx][ret]
 
          call getaddr  ; push on the stack the run-time address of format and jump to getaddr
 format:
-         db "Wynik odejmowania = %d", 0xA, 0
+         db "liczba = %d", 0xA
+         db "modul = %d", 0xA, 0
 getaddr:
 
-;        esp -> [format][eax][ret]
+;        esp -> [format][eax][ecx][ret]
 
-         call [ebx+3*4]  ; printf(format, eax);
-         add esp, 2*4    ; esp = esp + 8
+         call [ebx+3*4]  ; printf(format);
+         add esp, 3*4      ; esp = esp + 4
 
 ;        esp -> [ret]
 

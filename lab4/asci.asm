@@ -2,31 +2,38 @@
 
 ;        esp -> [ret]  ; ret - adres powrotu do asmloader
 
-a        equ 5
-b        equ 10
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
+format:
+         db "znak = ", 0
+getaddr:
 
-         mov eax, a    ; eax = a
-         mov ecx, b    ; ecx = b
-         sub eax, ecx  ; eax = eax - ecx
+;        esp -> [format][ret]
 
+         call [ebx+3*4]  ; printf(format);
+         add esp, 4      ; esp = esp + 4
+
+;        esp -> [ret]
+
+         call [ebx+2*4]  ; eax = getchar();
+         
          push eax  ; eax -> stack
          
 ;        esp -> [eax][ret]
 
-         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
-format:
-         db "Wynik odejmowania = %d", 0xA, 0
-getaddr:
+         call getaddr2  ; push on the stack the run-time address of format and jump to getaddr2
+format2:
+         db "ascii = %02x", 0xA, 0
+getaddr2:
 
-;        esp -> [format][eax][ret]
+;        esp -> [format][ret]
 
-         call [ebx+3*4]  ; printf(format, eax);
-         add esp, 2*4    ; esp = esp + 8
+         call [ebx+3*4]  ; printf(format);
+         add esp, 2*4      ; esp = esp + 8
 
 ;        esp -> [ret]
-
          push 0          ; esp -> [00 00 00 00][ret]
          call [ebx+0*4]  ; exit(0);
+
 
 ; asmloader API
 ;
