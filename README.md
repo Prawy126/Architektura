@@ -624,3 +624,1164 @@ int main() {
 
 ```
 
+## Lab 3
+
+### Zadanie 2
+Prześledź wynik uruchomienia programu char.asm. Przykładowa sesja:
+
+Simplified Assembly Loader v.0.0.1 by gynvael.coldwind//vx
+Code loaded at 0x002c0100 (12 bytes)
+H
+
+- pod jaki adres logiczny został załadowany ten program?
+- ile bajtów zajmuje ten addres logiczny?
+- ile bajtów w pamięci zajmuje ten program?
+- jaki jest wynik działania tego programu?
+
+###### Odpowiedź:
+Pod jaki adres logiczny został załadowany ten program?
+
+Program został załadowany pod adres logiczny 0x002c0100.
+
+Adres logiczny 0x002c0100 zajmuje 12 bajtów.
+
+Program zajmuje 12 bajtów w pamięci.
+
+#### Zadanie 3
+
+Prześledź wynik działania deasemblera dla programu char.asm.
+
+00000000  6A48              push byte +0x48
+00000002  FF5304            call [ebx+0x4]
+00000005  83C404            add esp,byte +0x4
+00000008  6A00              push byte +0x0
+0000000A  FF13              call [ebx]
+
+- co przechowuje pierwsza, druga i trzecia kolumna w powyższym listingu?
+
+- jaki adres ma instrukcja push 'H' ? 00000000
+- ile bajtów ma instrukcja push 'H' ? 2 bajty
+- jaki kod rozkazu ma instrukcja push 'H' ? 6A48
+- jaki kod ASCI ma literka 'H' ? 0x48
+
+- jaki adres ma instrukcja call [ebx+0*4] ? 00000003
+- ile bajtów ma instrukcja call [ebx+0*4] ? 3 bajtów
+- jaki kod rozkazu ma instrukcja call [ebx+0*4] ? FF5304
+- ile bajtów zajmuje kod rozkazu instrukcji call [ebx+0*4] ? 3 bajty
+- jaki kod ma argument instrukcji call [ebx+0*4] ?  5304
+
+- jaki adres ma instrukcja add esp, 4 ? * 00000005
+- ile bajtów ma instrukcja add esp, 4 ? * 3 bajty
+- jaki kod rozkazu ma instrukcja add esp, 4 ? * 83C404
+- ile bajtów zajmuje kod rozkazu instrukcji add esp, 4 ? * 3 bajty
+- jaki kod ma argument instrukcji add esp, 4 ? * C404
+
+- jaki adres ma instrukcja call [ebx+1*4] ? *  00000008
+- ile bajtów ma instrukcja call [ebx+1*4] ? * 2 bajty
+- jaki kod rozkazu ma instrukcja call [ebx+1*4] ? * 6A00
+- ile bajtów zajmuje kod rozkazu instrukcji call [ebx+1*4] ? * 2 bajty
+- czy instrukcja call [ebx+1*4] ma kod argumentu? * tak
+
+#### Zadanie 4
+
+Na poniższym przykładzie omów ogólne zasady formatowania kodu w języku asemblera.
+
+label    instruction  ; comment
+
+;        column 10    ; two spaces before a semicolon
+
+- w której kolumnie umieszczamy etykiety?
+- w której kolumnie umieszczamy instrukcje?
+- ile spacji dajemy przed średnikiem w komentarzu?
+
+Odp:
+
+Etykiety: Etykiety zazwyczaj umieszczane są na początku linii i są wyrównane do lewej krawędzi kodu. Często znajdują się w kolumnie 1, ale mogą być umieszczane w innych kolumnach w zależności od preferencji lub konwencji projektu.
+
+Instrukcje: Instrukcje asemblerowe są umieszczane po etykiecie (jeśli istnieje) lub na początku linii, po ewentualnych wcięciach, a ich rozmieszczenie może zależeć od konkretnych zasad konwencji. W wielu przypadkach są wyrównane w kolumnach, zazwyczaj od 10. do 20., ale zasady mogą się różnić w zależności od preferencji lub standardu.
+
+Komentarze: Komentarze zazwyczaj umieszcza się po instrukcjach lub w osobnej linii. Standardowo stosuje się dwie spacje przed komentarzem, ale to również może zależeć od konwencji projektowej.
+
+#### Zadanie 5
+
+Zapisz program labels.asm pod nazwą labels2.asm oraz zamień w nim nazwy etykiet adresami właściwymi dla uruchomionego programu.
+
+- jaki adres odkłada na stos instrukcja call ?
+- pod jaki adres skacze instrukcja call ?
+
+
+```asm
+                      [bits 32]
+
+;        esp -> [ret]  ; ret - adres powrotu do asmloader
+
+a        equ -4
+
+         push a  ; a -> stack
+
+;        esp -> [a][ret]
+
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
+format:
+         db "a = %d", 0xA, 0
+getaddr:
+
+;         esp -> [format][a][ret]
+
+         call [ebx+3*4]  ; printf(format, a);
+         add esp, 2*4    ; esp = esp + 8
+
+;        esp -> [ret]
+
+         push 0          ; esp -> [00 00 00 00][ret]
+         call [ebx+0*4]  ; exit(0);
+
+; asmloader API
+;
+; ESP wskazuje na prawidlowy stos
+; argumenty funkcji wrzucamy na stos
+; EBX zawiera pointer na tablice API
+;
+; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
+;
+; NR_FUNKCJI:
+;
+; 0 - exit
+; 1 - putchar
+; 2 - getchar
+; 3 - printf
+; 4 - scanf
+;
+; To co funkcja zwr�ci jest w EAX.
+; Po wywolaniu funkcji sciagamy argumenty ze stosu.
+;
+; https://gynvael.coldwind.pl/?id=387
+
+%ifdef COMMENT
+
+Tablica API
+
+ebx    -> [ ][ ][ ][ ] -> exit
+ebx+4  -> [ ][ ][ ][ ] -> putchar
+ebx+8  -> [ ][ ][ ][ ] -> getchar
+ebx+12 -> [ ][ ][ ][ ] -> printf
+ebx+16 -> [ ][ ][ ][ ] -> scanf
+
+%endif
+
+```
+#### Zadanie 6
+
+Napisz program printf.asm wypisujący napis Hello world! przy pomocy API asmloadera. Wykorzystaj komentarz:
+
+; push on the stack the run-time address of format and jump to getaddr
+
+- jaki adres ma instrukcja call getaddr ? 0 
+- ile bajtów ma instrukcja call getaddr ? 5 bajtów
+- jaki kod rozkazu ma instrukcja call getaddr ? E8
+- ile bajtów ma argument instrukcji call getaddr ? 4 bajty
+
+- co przechowuje etykieta format ? adres
+- jaką wartość ma etykieta format ? 5
+- jaką wartość na stosie ma format ? 0x001f0105
+
+```asm
+         [bits 32]
+
+;        esp -> [ret]  ; ret - adres powrotu do asmloader
+
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
+format:
+         db "Hello World!", 0xA, 0
+getaddr:
+
+;        esp -> [format][ret]
+
+         call [ebx+3*4]  ; printf(format);
+         add esp, 4      ; esp = esp + 4
+
+;        esp -> [ret]
+
+         push 0          ; esp -> [00 00 00 00][ret]
+         call [ebx+0*4]  ; exit(0);
+
+; asmloader API
+;
+; ESP wskazuje na prawidlowy stos
+; argumenty funkcji wrzucamy na stos
+; EBX zawiera pointer na tablice API
+;
+; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
+;
+; NR_FUNKCJI:
+;
+; 0 - exit
+; 1 - putchar
+; 2 - getchar
+; 3 - printf
+; 4 - scanf
+;
+; To co funkcja zwr�ci jest w EAX.
+; Po wywolaniu funkcji sciagamy argumenty ze stosu.
+;
+; https://gynvael.coldwind.pl/?id=387
+
+%ifdef COMMENT
+
+Tablica API
+
+ebx    -> [ ][ ][ ][ ] -> exit
+ebx+4  -> [ ][ ][ ][ ] -> putchar
+ebx+8  -> [ ][ ][ ][ ] -> getchar
+ebx+12 -> [ ][ ][ ][ ] -> printf
+ebx+16 -> [ ][ ][ ][ ] -> scanf
+
+%endif
+
+```
+
+#### Zadanie 7
+Napisz program, który przy pomocy asmloader api:
+
+printf2.asm – wyświetla stałą a
+printf3.asm – wyświetla dwie stałe a i b *
+printf4.asm – wyświetla stałą a w podprogramie print
+printf5.asm – wyświeta dwie stałe a i b w podprogramie print *
+printf6.asm – wyświeta stałą a zapisaną w pamięci programu
+printf7.asm – tak jak powyżej, ale z wykorzystaniem instrukcji pop *
+printf8.asm – skrócona wersja programu print6 *
+printf9.asm – skrócona wersja programu print7 *
+
+- printf1.asm:
+
+```asm
+                      [bits 32]
+
+;        esp -> [ret]  ; ret - adres powrotu do asmloader
+
+a        equ -4
+
+         push a  ; a -> stack
+
+;        esp -> [a][ret]
+
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
+format:
+         db "a = %d", 0xA, 0
+getaddr:
+
+;         esp -> [format][a][ret]
+
+         call [ebx+3*4]  ; printf(format, a);
+         add esp, 2*4    ; esp = esp + 8
+
+;        esp -> [ret]
+
+         push 0          ; esp -> [00 00 00 00][ret]
+         call [ebx+0*4]  ; exit(0);
+
+; asmloader API
+;
+; ESP wskazuje na prawidlowy stos
+; argumenty funkcji wrzucamy na stos
+; EBX zawiera pointer na tablice API
+;
+; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
+;
+; NR_FUNKCJI:
+;
+; 0 - exit
+; 1 - putchar
+; 2 - getchar
+; 3 - printf
+; 4 - scanf
+;
+; To co funkcja zwr�ci jest w EAX.
+; Po wywolaniu funkcji sciagamy argumenty ze stosu.
+;
+; https://gynvael.coldwind.pl/?id=387
+
+%ifdef COMMENT
+
+Tablica API
+
+ebx    -> [ ][ ][ ][ ] -> exit
+ebx+4  -> [ ][ ][ ][ ] -> putchar
+ebx+8  -> [ ][ ][ ][ ] -> getchar
+ebx+12 -> [ ][ ][ ][ ] -> printf
+ebx+16 -> [ ][ ][ ][ ] -> scanf
+
+%endif
+
+```
+
+- printf3.asm:
+
+```asm
+                      [bits 32]
+
+;        esp -> [ret]  ; ret - adres powrotu do asmloader
+
+a        equ -4
+
+         push a  ; a -> stack
+
+;        esp -> [a][ret]
+
+b        equ 6
+
+         push b  ; b -> stack
+
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
+format:
+         db "b = %d" , 0xA
+
+         db "a = %d", 0xA, 0
+getaddr:
+
+;        esp -> [format][b][a][ret]
+
+         call [ebx+3*4]  ; printf(format, b);
+         add esp, 2*4    ; esp = esp + 8
+
+
+;        esp -> [ret]
+
+         push 0          ; esp -> [00 00 00 00][ret]
+         call [ebx+0*4]  ; exit(0);
+
+;        esp -> [format][a][ret]
+
+         call [ebx+3*4]  ; printf(format, a);
+         add esp, 2*4    ; esp = esp + 8
+
+
+;        esp -> [ret]
+
+         push 0          ; esp -> [00 00 00 00][ret]
+         call [ebx+0*4]  ; exit(0);
+
+
+; asmloader API
+;
+; ESP wskazuje na prawidlowy stos
+; argumenty funkcji wrzucamy na stos
+; EBX zawiera pointer na tablice API
+;
+; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
+;
+; NR_FUNKCJI:
+;
+; 0 - exit
+; 1 - putchar
+; 2 - getchar
+; 3 - printf
+; 4 - scanf
+;
+; To co funkcja zwr�ci jest w EAX.
+; Po wywolaniu funkcji sciagamy argumenty ze stosu.
+;
+; https://gynvael.coldwind.pl/?id=387
+
+%ifdef COMMENT
+
+Tablica API
+
+ebx    -> [ ][ ][ ][ ] -> exit
+ebx+4  -> [ ][ ][ ][ ] -> putchar
+ebx+8  -> [ ][ ][ ][ ] -> getchar
+ebx+12 -> [ ][ ][ ][ ] -> printf
+ebx+16 -> [ ][ ][ ][ ] -> scanf
+
+%endif
+
+```
+
+- printf4.asm:
+
+```asm
+         [bits 32]
+
+;        esp -> [ret]  ; ret - adres powrotu do asmloader
+
+a        equ -4
+
+         mov eax, a ; eax = a
+
+         call print ; fastcall
+raddr:              ; return address
+
+;        esp -> [ret]
+
+         push 0          ; esp -> [00 00 00 00][ret]
+         call [ebx+0*4]  ; exit(0);
+
+print:
+
+;        esp -> [raddr][ret]
+         
+         push eax  ; eax -> stack
+         
+;        esp -> [eax][raddr][ret]
+
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
+format:
+         db "a = %d", 0xA, 0
+getaddr:
+
+;        esp -> [eax][raddr][ret]
+
+         call [ebx+3*4]  ; printf(format, a);
+         add esp, 2*4    ; esp = esp + 8   
+
+;        esp -> [raddr][ret]
+
+         ret  ; retun to raddr
+
+; asmloader API
+;
+; ESP wskazuje na prawidlowy stos
+; argumenty funkcji wrzucamy na stos
+; EBX zawiera pointer na tablice API
+;
+; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
+;
+; NR_FUNKCJI:
+;
+; 0 - exit
+; 1 - putchar
+; 2 - getchar
+; 3 - printf
+; 4 - scanf
+;
+; To co funkcja zwr�ci jest w EAX.
+; Po wywolaniu funkcji sciagamy argumenty ze stosu.
+;
+; https://gynvael.coldwind.pl/?id=387
+
+%ifdef COMMENT
+
+Tablica API
+
+ebx    -> [ ][ ][ ][ ] -> exit
+ebx+4  -> [ ][ ][ ][ ] -> putchar
+ebx+8  -> [ ][ ][ ][ ] -> getchar
+ebx+12 -> [ ][ ][ ][ ] -> printf
+ebx+16 -> [ ][ ][ ][ ] -> scanf
+
+%endif
+
+```
+
+- printf5.asm
+
+```asm
+[bits 32]
+
+;        esp -> [ret]  ; ret - adres powrotu do asmloader
+
+a        equ 5
+b        equ 10
+
+         mov eax, a ; eax = a
+
+         call print ; fastcall
+raddr:              ; return address
+
+;        esp -> [ret]
+
+         push 0          ; esp -> [00 00 00 00][ret]
+         call [ebx+0*4]  ; exit(0);
+
+print:
+
+;        esp -> [raddr][ret]
+         
+         push eax  ; eax -> stack
+         mov eax, b ; eax = b
+         push eax  ; eax -> stack
+         
+;        esp -> [eax][eax][raddr][ret]
+
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
+format:
+         db "a = %d, b = %d", 0xA, 0
+getaddr:
+
+;        esp -> [eax][eax][raddr][ret]
+
+         call [ebx+3*4]  ; printf(format, a, b);
+         add esp, 2*4    ; esp = esp + 8   
+
+;        esp -> [raddr][ret]
+
+         ret  ; return to raddr
+
+; asmloader API
+;
+; ESP wskazuje na prawidlowy stos
+; argumenty funkcji wrzucamy na stos
+; EBX zawiera pointer na tablice API
+;
+; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
+;
+; NR_FUNKCJI:
+;
+; 0 - exit
+; 1 - putchar
+; 2 - getchar
+; 3 - printf
+; 4 - scanf
+;
+; To co funkcja zwr�ci jest w EAX.
+; Po wywolaniu funkcji sciagamy argumenty ze stosu.
+;
+; https://gynvael.coldwind.pl/?id=387
+
+%ifdef COMMENT
+
+Tablica API
+
+ebx    -> [ ][ ][ ][ ] -> exit
+ebx+4  -> [ ][ ][ ][ ] -> putchar
+ebx+8  -> [ ][ ][ ][ ] -> getchar
+ebx+12 -> [ ][ ][ ][ ] -> printf
+ebx+16 -> [ ][ ][ ][ ] -> scanf
+
+%endif
+
+```
+
+- printf6.asm:
+
+```asm
+    [bits 32]
+
+;        esp -> [ret]    ; ret - adres powrotu do asmloader
+ 
+a        equ -4
+ 
+         call getaddr
+addr_a:
+         dd a  ; [][][][]  ; define double word
+getaddr:
+ 
+;        esp -> [addr_a][ret]
+ 
+         mov eax, [esp]  ; eax = *(int*)addr_a = a -> stack
+ 
+         push dword [eax]  ; *(int*)eax = *(int*)addr_a = a -> stack
+ 
+;        esp -> [a][addr_a][ret]
+ 
+         call getaddr2  ; push on the stack the run time address of format and jump
+format:
+         db "a = %d", 0xA, 0
+getaddr2:
+ 
+;        esp -> [format][a][addr_a][ret]
+ 
+         call [ebx+3*4]  ; printf(format, a);
+         add esp, 3*4    ; esp = esp + 12
+ 
+;        esp -> [ret]
+ 
+         push 0          ; esp -> [00 00 00 00][ret]
+         call [ebx+0*4]  ; exit(0);
+ 
+; asmloader API
+;
+; ESP wskazuje na prawidlowy stos
+; argumenty funkcji wrzucamy na stos
+; EBX zawiera pointer na tablice API
+;
+; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
+;
+; NR_FUNKCJI:
+;
+; 0 - exit
+; 1 - putchar
+; 2 - getchar
+; 3 - printf
+; 4 - scanf
+;
+; To co funkcja zwr�ci jest w EAX.
+; Po wywolaniu funkcji sciagamy argumenty ze stosu.
+;
+; https://gynvael.coldwind.pl/?id=387
+ 
+%ifdef COMMENT
+ 
+Tablica API
+ 
+ebx    -> [ ][ ][ ][ ] -> exit
+ebx+4  -> [ ][ ][ ][ ] -> putchar
+ebx+8  -> [ ][ ][ ][ ] -> getchar
+ebx+12 -> [ ][ ][ ][ ] -> printf
+ebx+16 -> [ ][ ][ ][ ] -> scanf
+ 
+%endif
+```
+
+- printf7.asm:
+
+```asm
+[bits 32]
+
+;        esp -> [ret]    ; ret - adres powrotu do asmloader
+ 
+a        equ -4
+ 
+         call getaddr
+addr_a:
+         dd a  ; [][][][]  ; define double word
+getaddr:
+ 
+;        esp -> [addr_a][ret]
+ 
+         mov eax, [esp]  ; eax = *(int*)addr_a = a -> stack
+ 
+         push dword [eax]  ; *(int*)eax = *(int*)addr_a = a -> stack
+ 
+;        esp -> [a][addr_a][ret]
+ 
+         call getaddr2  ; push on the stack the run time address of format and jump
+format:
+         db "a = %d", 0xA, 0
+getaddr2:
+ 
+;        esp -> [format][a][addr_a][ret]
+ 
+         call [ebx+3*4]  ; printf(format, a);
+         pop ebx         ; Remove addr_a from the stack
+         pop ebx         ; Remove a from the stack
+         pop ebx         ; Remove format from the stack
+ 
+;        esp -> [ret]
+ 
+         push 0          ; esp -> [00 00 00 00][ret]
+         call [ebx+0*4]  ; exit(0);
+ 
+; asmloader API
+;
+; ESP wskazuje na prawidlowy stos
+; argumenty funkcji wrzucamy na stos
+; EBX zawiera pointer na tablice API
+;
+; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
+;
+; NR_FUNKCJI:
+;
+; 0 - exit
+; 1 - putchar
+; 2 - getchar
+; 3 - printf
+; 4 - scanf
+;
+; To co funkcja zwr�ci jest w EAX.
+; Po wywolaniu funkcji sciagamy argumenty ze stosu.
+;
+; https://gynvael.coldwind.pl/?id=387
+ 
+%ifdef COMMENT
+ 
+Tablica API
+ 
+ebx    -> [ ][ ][ ][ ] -> exit
+ebx+4  -> [ ][ ][ ][ ] -> putchar
+ebx+8  -> [ ][ ][ ][ ] -> getchar
+ebx+12 -> [ ][ ][ ][ ] -> printf
+ebx+16 -> [ ][ ][ ][ ] -> scanf
+ 
+%endif
+
+```
+
+- printf8.asm
+
+```asm
+[bits 32]
+
+;        esp -> [ret]    ; ret - adres powrotu do asmloader
+ 
+a        equ -4
+ 
+         call getaddr
+addr_a:
+         dd a  ; [][][][]  ; define double word
+getaddr:
+ 
+;        esp -> [addr_a][ret]
+ 
+         mov eax, [esp]    ; eax = *(int*)addr_a = a -> stack
+         push dword [eax]  ; *(int*)eax = *(int*)addr_a = a -> stack
+ 
+;        esp -> [a][addr_a][ret]
+ 
+         call getaddr2      ; push on the stack the run time address of format and jump
+format:
+         db "a = %d", 0xA, 0
+getaddr2:
+ 
+;        esp -> [format][a][addr_a][ret]
+ 
+         call [ebx+3*4]  ; printf(format, a);
+         add esp, 3*4    ; esp = esp + 12
+ 
+;        esp -> [ret]
+ 
+         push 0          ; esp -> [00 00 00 00][ret]
+         call [ebx+0*4]  ; exit(0);
+
+```
+
+- printf9.asm:
+
+```asm
+[bits 32]
+
+;        esp -> [ret]    ; ret - adres powrotu do asmloader
+ 
+a        equ -4
+ 
+         call getaddr
+addr_a:
+         dd a  ; [][][][]  ; define double word
+getaddr:
+ 
+;        esp -> [addr_a][ret]
+ 
+         mov eax, [esp]  ; eax = *(int*)addr_a = a -> stack
+         push dword [eax]  ; *(int*)eax = *(int*)addr_a = a -> stack
+ 
+;        esp -> [a][addr_a][ret]
+ 
+         call getaddr2  ; push on the stack the run time address of format and jump
+format:
+         db "a = %d", 0xA, 0
+getaddr2:
+ 
+;        esp -> [format][a][addr_a][ret]
+ 
+         call [ebx+3*4]  ; printf(format, a);
+         pop ebx         ; Remove addr_a from the stack
+         pop ebx         ; Remove a from the stack
+         pop ebx         ; Remove format from the stack
+ 
+;        esp -> [ret]
+ 
+         push 0          ; esp -> [00 00 00 00][ret]
+         call [ebx+0*4]  ; exit(0);
+
+```
+#### Zadanie 8
+Napisz program, który przy pomocy asmloader api:
+
+add.asm – dodaje do rejestru eax zawartość rejestru ecx i wypisuje wynik 
+add2.asm – dodaje do wartości a w rejestrze eax stałą b i wypisuje wynik
+add3.asm – dodaje do wartości a w rejestrze eax liczbę b z pamięci i wypisuje wynik *
+
+sub.asm – odejmuje od rejestru eax zawartośc rejestru ecx i wypisuje wynik *
+sub2.asm – odejmuje od wartości a w rejestrze eax stałą b i wypisuje wynik *
+sub3.asm – odejmuje od wartości a w rejestrze eax liczbę b z pamięci i wypisuje wynik *
+
+- add.asm
+
+```asm
+         [bits 32]
+
+;        esp -> [ret]  ; ret - adres powrotu do asmloader
+         
+a        equ 3
+b        equ -6
+         
+         mov eax, a  ; eax = a
+         mov ecx, b  ; ecx = b
+         
+         add eax, ecx  ; eax = eax + eax
+         
+         push eax  ; eax -> stack
+         
+;        esp -> [eax][ret]
+
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
+format:
+         db "suma = %d", 0xA, 0
+getaddr:
+
+;        esp -> [format][eax][ret]
+
+         call [ebx+3*4]  ; printf(format, eax);
+         add esp, 2*4    ; esp = esp + 8
+
+;        esp -> [ret]
+
+         push 0          ; esp -> [00 00 00 00][ret]
+         call [ebx+0*4]  ; exit(0);
+
+; asmloader API
+;
+; ESP wskazuje na prawidlowy stos
+; argumenty funkcji wrzucamy na stos
+; EBX zawiera pointer na tablice API
+;
+; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
+;
+; NR_FUNKCJI:
+;
+; 0 - exit
+; 1 - putchar
+; 2 - getchar
+; 3 - printf
+; 4 - scanf
+;
+; To co funkcja zwr�ci jest w EAX.
+; Po wywolaniu funkcji sciagamy argumenty ze stosu.
+;
+; https://gynvael.coldwind.pl/?id=387
+
+%ifdef COMMENT
+
+Tablica API
+
+ebx    -> [ ][ ][ ][ ] -> exit
+ebx+4  -> [ ][ ][ ][ ] -> putchar
+ebx+8  -> [ ][ ][ ][ ] -> getchar
+ebx+12 -> [ ][ ][ ][ ] -> printf
+ebx+16 -> [ ][ ][ ][ ] -> scanf
+
+%endif
+
+```
+
+- add2.asm:
+
+```asm
+         [bits 32]
+
+;        esp -> [ret]  ; ret - adres powrotu do asmloader
+         
+a        equ 3
+b        equ -6
+         
+         mov eax, a  ; eax = a
+         add eax, b  ; eax = eax + b = a + b
+                       
+         push eax  ; eax -> stack
+         
+;        esp -> [eax][ret]
+
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
+format:
+         db "suma = %d", 0xA, 0
+getaddr:
+
+;        esp -> [format][eax][ret]
+
+         call [ebx+3*4]  ; printf(format, eax);
+         add esp, 2*4    ; esp = esp + 8
+
+;        esp -> [ret]
+
+         push 0          ; esp -> [00 00 00 00][ret]
+         call [ebx+0*4]  ; exit(0);
+
+; asmloader API
+;
+; ESP wskazuje na prawidlowy stos
+; argumenty funkcji wrzucamy na stos
+; EBX zawiera pointer na tablice API
+;
+; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
+;
+; NR_FUNKCJI:
+;
+; 0 - exit
+; 1 - putchar
+; 2 - getchar
+; 3 - printf
+; 4 - scanf
+;
+; To co funkcja zwr�ci jest w EAX.
+; Po wywolaniu funkcji sciagamy argumenty ze stosu.
+;
+; https://gynvael.coldwind.pl/?id=387
+
+%ifdef COMMENT
+
+Tablica API
+
+ebx    -> [ ][ ][ ][ ] -> exit
+ebx+4  -> [ ][ ][ ][ ] -> putchar
+ebx+8  -> [ ][ ][ ][ ] -> getchar
+ebx+12 -> [ ][ ][ ][ ] -> printf
+ebx+16 -> [ ][ ][ ][ ] -> scanf
+
+%endif
+
+```
+
+- add3.asm:
+
+```asm
+         [bits 32]
+
+;        esp -> [ret]  ; ret - adres powrotu do asmloader
+         
+a        equ 3
+b        equ -6
+        mov eax, a    ; eax = a
+        mov ecx, b    ; ecx = b
+        add eax, ecx  ; eax = eax + ecx
+         
+;        esp -> [eax][ret]
+
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
+format:
+         db "suma = %d", 0xA, 0
+getaddr:
+
+;        esp -> [format][eax][ret]
+
+         call [ebx+3*4]  ; printf(format, eax);
+         add esp, 2*4    ; esp = esp + 8
+
+;        esp -> [ret]
+
+         push 0          ; esp -> [00 00 00 00][ret]
+         call [ebx+0*4]  ; exit(0);
+
+; asmloader API
+;
+; ESP wskazuje na prawidlowy stos
+; argumenty funkcji wrzucamy na stos
+; EBX zawiera pointer na tablice API
+;
+; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
+;
+; NR_FUNKCJI:
+;
+; 0 - exit
+; 1 - putchar
+; 2 - getchar
+; 3 - printf
+; 4 - scanf
+;
+; To co funkcja zwr�ci jest w EAX.
+; Po wywolaniu funkcji sciagamy argumenty ze stosu.
+;
+; https://gynvael.coldwind.pl/?id=387
+
+%ifdef COMMENT
+
+Tablica API
+
+ebx    -> [ ][ ][ ][ ] -> exit
+ebx+4  -> [ ][ ][ ][ ] -> putchar
+ebx+8  -> [ ][ ][ ][ ] -> getchar
+ebx+12 -> [ ][ ][ ][ ] -> printf
+ebx+16 -> [ ][ ][ ][ ] -> scanf
+
+%endif
+
+```
+
+- sub.asm:
+
+```asm
+         [bits 32]
+
+;        esp -> [ret]  ; ret - adres powrotu do asmloader
+
+a        equ 5
+b        equ 10
+
+         mov eax, a    ; eax = a
+         mov ecx, b    ; ecx = b
+         sub eax, ecx  ; eax = eax - ecx
+
+         push eax  ; eax -> stack
+         
+;        esp -> [eax][ret]
+
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
+format:
+         db "Wynik odejmowania = %d", 0xA, 0
+getaddr:
+
+;        esp -> [format][eax][ret]
+
+         call [ebx+3*4]  ; printf(format, eax);
+         add esp, 2*4    ; esp = esp + 8
+
+;        esp -> [ret]
+
+         push 0          ; esp -> [00 00 00 00][ret]
+         call [ebx+0*4]  ; exit(0);
+
+; asmloader API
+;
+; ESP wskazuje na prawidlowy stos
+; argumenty funkcji wrzucamy na stos
+; EBX zawiera pointer na tablice API
+;
+; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
+;
+; NR_FUNKCJI:
+;
+; 0 - exit
+; 1 - putchar
+; 2 - getchar
+; 3 - printf
+; 4 - scanf
+;
+; To co funkcja zwr�ci jest w EAX.
+; Po wywolaniu funkcji sciagamy argumenty ze stosu.
+;
+; https://gynvael.coldwind.pl/?id=387
+
+%ifdef COMMENT
+
+Tablica API
+
+ebx    -> [ ][ ][ ][ ] -> exit
+ebx+4  -> [ ][ ][ ][ ] -> putchar
+ebx+8  -> [ ][ ][ ][ ] -> getchar
+ebx+12 -> [ ][ ][ ][ ] -> printf
+ebx+16 -> [ ][ ][ ][ ] -> scanf
+
+%endif
+```
+
+- sub1.asm:
+
+```asm
+         [bits 32]
+
+;        esp -> [ret]  ; ret - adres powrotu do asmloader
+         
+a        equ 3
+b        equ -6
+         mov eax, b  ; eax = 0
+         sub eax, a  ; eax = eax - a = b - a
+
+         push eax  ; eax -> stack
+         
+;        esp -> [eax][ret]
+
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
+format:
+         db "suma = %d", 0xA, 0
+getaddr:
+
+;        esp -> [format][eax][ret]
+
+         call [ebx+3*4]  ; printf(format, eax);
+         add esp, 2*4    ; esp = esp + 8
+
+;        esp -> [ret]
+
+         push 0          ; esp -> [00 00 00 00][ret]
+         call [ebx+0*4]  ; exit(0);
+
+; asmloader API
+;
+; ESP wskazuje na prawidlowy stos
+; argumenty funkcji wrzucamy na stos
+; EBX zawiera pointer na tablice API
+;
+; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
+;
+; NR_FUNKCJI:
+;
+; 0 - exit
+; 1 - putchar
+; 2 - getchar
+; 3 - printf
+; 4 - scanf
+;
+; To co funkcja zwr�ci jest w EAX.
+; Po wywolaniu funkcji sciagamy argumenty ze stosu.
+;
+; https://gynvael.coldwind.pl/?id=387
+
+%ifdef COMMENT
+
+Tablica API
+
+ebx    -> [ ][ ][ ][ ] -> exit
+ebx+4  -> [ ][ ][ ][ ] -> putchar
+ebx+8  -> [ ][ ][ ][ ] -> getchar
+ebx+12 -> [ ][ ][ ][ ] -> printf
+ebx+16 -> [ ][ ][ ][ ] -> scanf
+
+%endif
+
+```
+
+- sub3.asm:
+
+```asm
+         [bits 32]
+
+;        esp -> [ret]  ; ret - adres powrotu do asmloader
+         
+a        equ 3
+b        equ -6
+         mov eax, 0
+         add eax, a  ; eax = eax + b = a + b
+         sub eax, b
+
+         push eax  ; eax -> stack
+         
+;        esp -> [eax][ret]
+
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
+format:
+         db "suma = %d", 0xA, 0
+getaddr:
+
+;        esp -> [format][eax][ret]
+
+         call [ebx+3*4]  ; printf(format, eax);
+         add esp, 2*4    ; esp = esp + 8
+
+;        esp -> [ret]
+
+         push 0          ; esp -> [00 00 00 00][ret]
+         call [ebx+0*4]  ; exit(0);
+
+; asmloader API
+;
+; ESP wskazuje na prawidlowy stos
+; argumenty funkcji wrzucamy na stos
+; EBX zawiera pointer na tablice API
+;
+; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
+;
+; NR_FUNKCJI:
+;
+; 0 - exit
+; 1 - putchar
+; 2 - getchar
+; 3 - printf
+; 4 - scanf
+;
+; To co funkcja zwr�ci jest w EAX.
+; Po wywolaniu funkcji sciagamy argumenty ze stosu.
+;
+; https://gynvael.coldwind.pl/?id=387
+
+%ifdef COMMENT
+
+Tablica API
+
+ebx    -> [ ][ ][ ][ ] -> exit
+ebx+4  -> [ ][ ][ ][ ] -> putchar
+ebx+8  -> [ ][ ][ ][ ] -> getchar
+ebx+12 -> [ ][ ][ ][ ] -> printf
+ebx+16 -> [ ][ ][ ][ ] -> scanf
+
+%endif
+
+```
