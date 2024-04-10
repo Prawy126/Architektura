@@ -1,38 +1,37 @@
          [bits 32]
 
-;        esp -> [ret]  ; ret - adres powrotu do asmloader
+;        esp -> [ret] ; ret - adres powrotu do asmloader
 
 liczba   equ -5
 
-         mov eax, liczba  ;eax = liczba
-         mov ecx, eax     ;ecx = eax
-         
-         cmp eax, 0  ; eax = 0
-         jge nieujemna   ;
+         mov eax, liczba  ; eax = liczba
+         mov edx, eax     ; edx = eax
 
-         neg ecx  ; ecx = -ecx
+         cmp eax, 0    ; eax - 0            ; SF affected
+         jns dodatnia  ; jump if not signed ; jump if SF = 0
+         neg edx       ; edx = -edx
 
-nieujemna:
-          
-         push ecx  ; ecx -> stack
-         push eax  ; eax -> stack
+dodatnia:
 
-;        esp -> [eax][ecx][ret]
+         push edx
+         push eax
 
-         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
+;        esp -> [eax][edx][ret]
+
+         call getaddr
 format:
-         db "liczba = %d", 0xA
-         db "modul = %d", 0xA, 0
+         db "liczba = %i", 0xA
+         db "modul = %i", 0xA, 0
 getaddr:
 
-;        esp -> [format][eax][ecx][ret]
+;        esp -> [format][eax][edx][ret]
 
-         call [ebx+3*4]  ; printf(format);
-         add esp, 3*4      ; esp = esp + 4
+         call [ebx+3*4]  ; printf("liczba = %i\nmodul = %i\n", eax, edx);
+         add esp, 3*4    ; esp = esp + 12
 
 ;        esp -> [ret]
 
-         push 0          ; esp -> [00 00 00 00][ret]
+         push 0          ; esp -> [0][ret]
          call [ebx+0*4]  ; exit(0);
 
 ; asmloader API
@@ -55,15 +54,3 @@ getaddr:
 ; Po wywolaniu funkcji sciagamy argumenty ze stosu.
 ;
 ; https://gynvael.coldwind.pl/?id=387
-
-%ifdef COMMENT
-
-Tablica API
-
-ebx    -> [ ][ ][ ][ ] -> exit
-ebx+4  -> [ ][ ][ ][ ] -> putchar
-ebx+8  -> [ ][ ][ ][ ] -> getchar
-ebx+12 -> [ ][ ][ ][ ] -> printf
-ebx+16 -> [ ][ ][ ][ ] -> scanf
-
-%endif

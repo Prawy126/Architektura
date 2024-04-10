@@ -4,39 +4,30 @@
 
          call getaddr
 format:
-         db "a = ", 0
+        db 'znak = ', 0
 getaddr:
 
 ;        esp -> [format][ret]
 
-         call [ebx+3*4]  ; printf("a = ");
+         call [ebx+3*4]  ; printf('znak = ');
+         add esp, 4    ; esp = esp + 4
 
-;        esp -> [a][ret]  ; zmienna a, adres format1 nie jest juz potrzebny
+;        esp -> [ret]
 
-         push esp  ; odkladamy na stos adres zmiennej a ; *(int*)(esp-4) = esp ; esp = esp - 4
+         call [ebx+2*4]  ; eax = getchar();
 
-;        esp -> [addr_a][a][ret]
+         push eax  ; eax -> stack
+         
+;        esp -> [eax][ret]
 
          call getaddr2
 format2:
-         db "%i", 0
+        db 'ascii = %02X', 0xA, 0
 getaddr2:
 
-;        esp -> [format2][addr_a][a][ret]
+;        esp -> [format2][eax][ret]
 
-         call [ebx+4*4]  ; scanf("%i", &a);
-         add esp, 2*4    ; esp = esp + 8
-
-;        esp -> [a][ret]
-
-         call getaddr3
-format3:
-         db "a = %i", 0xA, 0
-getaddr3:
-
-;        esp -> [format3][a][ret]
-
-         call [ebx+3*4]  ; printf("a = %i\n", a);
+         call [ebx+3*4]  ; printf('ascii = %02X\n', eax);
          add esp, 2*4    ; esp = esp + 8
 
 ;        esp -> [ret]
@@ -64,3 +55,13 @@ getaddr3:
 ; Po wywolaniu funkcji sciagamy argumenty ze stosu.
 ;
 ; https://gynvael.coldwind.pl/?id=387
+
+%ifdef COMMENT
+
+ebx    -> [ ][ ][ ][ ] -> exit
+ebx+4  -> [ ][ ][ ][ ] -> putchar
+ebx+8  -> [ ][ ][ ][ ] -> getchar
+ebx+12 -> [ ][ ][ ][ ] -> printf
+ebx+16 -> [ ][ ][ ][ ] -> scanf
+
+%endif

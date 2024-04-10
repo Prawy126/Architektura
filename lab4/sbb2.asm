@@ -1,42 +1,48 @@
-         [bits 32]
+[bits 32]
 
 ;        esp -> [ret]  ; ret - adres powrotu do asmloader
 
+a        equ 5
+b        equ 4
+
+         mov eax, a  ; eax = a
+
+         clc           ; CF = 0
+         sbb eax, b  ; eax = eax + ecx + CF
+
+         push eax
+
+;        esp -> [eax][ret]
+
          call getaddr
 format:
-         db "a = ", 0
+         db "roznica1 = %d", 0xA, 0
 getaddr:
 
-;        esp -> [format][ret]
+;        esp -> [format][eax][ret]
 
-         call [ebx+3*4]  ; printf("a = ");
+         call [ebx+3*4]  ; printf("suma1 = %d\n", eax);
+         add esp, 2*4    ; esp = esp + 8
 
-;        esp -> [a][ret]  ; zmienna a, adres format1 nie jest juz potrzebny
+;        esp -> [ret]
 
-         push esp  ; odkladamy na stos adres zmiennej a ; *(int*)(esp-4) = esp ; esp = esp - 4
+         mov eax, a  ; eax = a
 
-;        esp -> [addr_a][a][ret]
+         stc           ; CF = 1
+         sbb eax, b  ; eax = eax + ecx + CF
+
+         push eax
+
+;        esp -> [eax][ret]
 
          call getaddr2
 format2:
-         db "%i", 0
+         db "roznica2 = %d", 0xA, 0
 getaddr2:
 
-;        esp -> [format2][addr_a][a][ret]
+;        esp -> [format2][eax][ret]
 
-         call [ebx+4*4]  ; scanf("%i", &a);
-         add esp, 2*4    ; esp = esp + 8
-
-;        esp -> [a][ret]
-
-         call getaddr3
-format3:
-         db "a = %i", 0xA, 0
-getaddr3:
-
-;        esp -> [format3][a][ret]
-
-         call [ebx+3*4]  ; printf("a = %i\n", a);
+         call [ebx+3*4]  ; printf("wynik2 = %d\n", eax);
          add esp, 2*4    ; esp = esp + 8
 
 ;        esp -> [ret]

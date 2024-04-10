@@ -1,83 +1,32 @@
-         [bits 32]
+section .data
+    format db "a = ", 0
+    format2 db "%d", 0
+    format3 db "a = %d", 0xA, 0
 
-;        esp -> [ret]  ; ret - adres powrotu do asmloader
-         
-a        equ 3
-b        equ -6
-         
-         mov eax, a  ; eax = a
+section .text
+    global _start
 
-         clc           ; CF = 0
-         adc eax, b    ; eax = eax + b + CF
-         
-         push eax  ; eax -> stack
+_start:
+    ; Wywo³anie funkcji printf z formatem "a = "
+    push format
+    call dword [ebx + 3 * 4]  ; printf(format)
+    add esp, 4
 
-;        esp -> [eax][ret]
+    ; Zarezerwowanie miejsca na przechowywanie wartoœci zmiennej a
+    sub esp, 4
 
-         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
-format:
-         db "suma1 = %d", 0xA, 0
-getaddr:
+    ; Wywo³anie funkcji scanf
+    push esp
+    push format2
+    call dword [ebx + 4 * 4]  ; scanf(format2, &a)
+    add esp, 8
 
-;        esp -> [format][eax][ret]
+    ; Wypisanie pobranej wartoœci za pomoc¹ printf
+    push dword [esp]  ; Wartoœæ zmiennej a
+    push format3
+    call dword [ebx + 3 * 4]  ; printf(format3, a)
+    add esp, 8
 
-         call [ebx+3*4]  ; printf(format, eax);
-         add esp, 2*4    ; esp = esp + 8
-
-;        esp -> [ret]
-
-         mov eax, a  ; eax = a
-         mov ecx, b  ; ecx = b
-         
-         stc           ; CF = 1
-         adc eax, ecx  ; eax = eax + eax
-
-         push eax  ; eax -> stack
-
-          call getaddr2  ; push on the stack the run-time address of format and jump to getaddr
-format2:
-         db "suma2 = %d", 0xA, 0
-getaddr2:
-
-;        esp -> [format2][eax][ret]
-
-         call [ebx+3*4]  ; printf(format2, eax);
-         add esp, 2*4    ; esp = esp + 8
-
-;        esp -> [ret]
-
-         push 0          ; esp -> [00 00 00 00][ret]
-         call [ebx+0*4]  ; exit(0);
-
-; asmloader API
-;
-; ESP wskazuje na prawidlowy stos
-; argumenty funkcji wrzucamy na stos
-; EBX zawiera pointer na tablice API
-;
-; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
-;
-; NR_FUNKCJI:
-;
-; 0 - exit
-; 1 - putchar
-; 2 - getchar
-; 3 - printf
-; 4 - scanf
-;
-; To co funkcja zwróci jest w EAX.
-; Po wywolaniu funkcji sciagamy argumenty ze stosu.
-;
-; https://gynvael.coldwind.pl/?id=387
-
-%ifdef COMMENT
-
-Tablica API
-
-ebx    -> [ ][ ][ ][ ] -> exit
-ebx+4  -> [ ][ ][ ][ ] -> putchar
-ebx+8  -> [ ][ ][ ][ ] -> getchar
-ebx+12 -> [ ][ ][ ][ ] -> printf
-ebx+16 -> [ ][ ][ ][ ] -> scanf
-
-%endif
+    ; Wywo³anie funkcji exit
+    push 0
+    call dword [ebx]
