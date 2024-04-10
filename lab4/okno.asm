@@ -2,9 +2,9 @@
 
 ;        esp -> [ret]  ; ret - adres powrotu do asmloader
 
-x        equ 20
+x        equ -1
 a        equ 5
-b        equ 19
+b        equ 15
 
          mov eax, x    ; eax = x
          mov edx, a    ; edx = a
@@ -21,16 +21,16 @@ b        equ 19
          cmp eax, a  ; eax - a
          jl nienalezy  ; jump if lesser
 
-         call getaddr2 ; push on the stack the runtime address of format and jump to getaddr2
+         call getaddr ; push on the stack the runtime address of format and jump to getaddr
 format:
          db '%d nalezy do [%d, %d]', 0xA, 0
 
 nienalezy:
-          call getaddr2 ; push on the stack the runtime address of format and jump to getaddr2
+          call getaddr ; push on the stack the runtime address of format and jump to getaddr
 format2:
           db '%d nie nalezy do [%d, %d]', 0xA, 0
 
-getaddr2:
+getaddr:
 
 ;        esp -> [format1/2][eax][edx][ecx][ret]
 

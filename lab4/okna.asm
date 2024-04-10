@@ -2,20 +2,20 @@
 
 ;        esp -> [ret]  ; ret - adres powrotu do asmloader
 
+x        equ 6
+
 a        equ 5
 b        equ 19
 
 c        equ 12
 d        equ 24
 
-x        equ 25
-
          mov eax, x    ; eax = x
 
-         cmp eax, b    ; eax - b          ; OF SF ZF AF PF CF affected
+         cmp eax, b     ; eax - b          ; OF SF ZF AF PF CF affected
          jg nieNalezy1  ; jump if greater  ; jump if SF == OF and ZF = 0
 
-         cmp eax, a    ; eax - a          ; OF SF ZF AF PF CF affected
+         cmp eax, a     ; eax - a          ; OF SF ZF AF PF CF affected
          jl nieNalezy1  ; jump if less     ; jump if SF != OF1
 
          jmp sprawdz2
@@ -50,10 +50,10 @@ sprawdz2:
          jmp nalezyDoObu
 
 nieNalezy2:
-         cmp eax, b    ; eax - b          ; OF SF ZF AF PF CF affected
+         cmp eax, b     ; eax - b          ; OF SF ZF AF PF CF affected
          jg nieNalezy1  ; jump if greater  ; jump if SF == OF and ZF = 0
 
-         cmp eax, a    ; eax - a          ; OF SF ZF AF PF CF affected
+         cmp eax, a     ; eax - a          ; OF SF ZF AF PF CF affected
          jl nieNalezy1  ; jump if less     ; jump if SF != OF1
 
          push d    ; b -> stack
@@ -65,23 +65,25 @@ nieNalezy2:
 
 ;        esp -> [b][a][eax][ret]
 
-         call getaddr ; push on the stack the runtime address of format and jump to getaddr
+         call getaddr ; push on the stack the runtime address of format2 and jump to getaddr
 format2:
          db '%d nalezy do  (%d,%d)', 0xA,
          db '%d nie nalezy do  (%d,%d)', 0xA, 0
 
 nalezyDoObu:
-        push d    ; b -> stack
-        push c    ; a -> stack
-        push b    ; b -> stack
-        push a    ; a -> stack
-        push eax  ; eax -> stack
-;       esp -> [b][a][eax][ret]
+         push d    ; b -> stack
+         push c    ; a -> stack
+         push eax  ; eax -> stack
+         push b    ; b -> stack
+         push a    ; a -> stack
+         push eax  ; eax -> stack
 
-        call getaddr
+
+        call getaddr  ; push on the stack the runtime address of format3 and jump to getaddr
 format3:
-         db '%d nalezy do (%d,%d) i (%d,%d)', 0xA, 0
-         
+         db '%d nalezy do (%d,%d)', 0xA,
+         db '%d nalezy do (%d,%d)', 0xA, 0
+
 nieNalezyDoObydwu:
         push d    ; b -> stack
         push c    ; a -> stack
@@ -90,7 +92,7 @@ nieNalezyDoObydwu:
         push eax  ; eax -> stack
 ;       esp -> [b][a][eax][ret]
 
-        call getaddr
+        call getaddr  ; push on the stack the runtime address of format4 and jump to getaddr
 format4:
          db '%d nie nalezy do (%d,%d) i (%d,%d)', 0xA, 0
 

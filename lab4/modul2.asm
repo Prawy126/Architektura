@@ -1,37 +1,38 @@
-        [bits 32]
+         [bits 32]
 
 ;        esp -> [ret]  ; ret - adres powrotu do asmloader
 
-a        equ -2
+liczba   equ -10
 
-         mov eax, a    ; eax = a
-         mov edx, eax  ; edx = eax
+         mov eax, liczba  ; eax = liczba
+         mov ecx, eax     ; ecx = eax
 
-         test eax, eax     ; eax - 0                  ; OF SF ZF AF PF CF affected
-         jge nieujemna  ; jump if greater or equal ; jump if SF == OF or ZF = 1
+         test eax, eax
+         jns nieujemna  ; jump if sign not ser  ; SF = 0
 
-         neg edx        ; edx = - edx
+         neg ecx  ; ecx = -ecx
+
 nieujemna:
-
-         push edx  ; edx -> stack
+          
+         push ecx  ; ecx -> stack
          push eax  ; eax -> stack
+         
+;        esp -> [eax][ecx][ret]
 
-;        esp -> [eax][edx][ret]
-
-         call getaddr ; push on the stack the runtime address of format and jump to getaddr
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
 format:
-         db 'liczba = %d', 0xA
-         db 'modul = %d', 0xA, 0
+         db "liczba = %d", 0xA
+         db "modul = %d", 0xA, 0
 getaddr:
 
-;        esp -> [format][eax][edx][ret]
+;        esp -> [format][eax][ecx][ret]
 
-         call [ebx+3*4]  ; printf(format, eax, edx);
-         add esp, 3*4    ; esp = esp + 8
+         call [ebx+3*4]  ; printf(format, eax, ecx);
+         add esp, 3*4    ; esp = esp + 12
 
 ;        esp -> [ret]
 
-         push 0          ; esp -> [0][ret]
+         push 0          ; esp -> [00 00 00 00][ret]
          call [ebx+0*4]  ; exit(0);
 
 ; asmloader API
@@ -56,6 +57,8 @@ getaddr:
 ; https://gynvael.coldwind.pl/?id=387
 
 %ifdef COMMENT
+
+Tablica API
 
 ebx    -> [ ][ ][ ][ ] -> exit
 ebx+4  -> [ ][ ][ ][ ] -> putchar

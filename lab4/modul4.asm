@@ -16,7 +16,7 @@ getaddr:
 
 ;        esp -> [addr_a][format][ret]
 
-         call getaddr2  ; push on the stack the runtime address of format and jump to getaddr
+         call getaddr2  ; push on the stack the runtime address of format2 and jump to getaddr2
 format2:
          db '%d', 0
 getaddr2:
@@ -33,12 +33,12 @@ getaddr2:
 
          pop eax
 
-         test eax, eax  ; eax - 0                   ; OF SF ZF AF PF CF affected
-         jge nieujemna  ; jump if greater or equal  ; jump if SF == OF or ZF = 1
+         test eax, eax    ; eax - 0                     ; OF SF ZF AF PF CF affected
+         jge nonnegative  ; jump if greater or equal  ; jump if SF == OF or ZF = 1
 
          neg eax          ; eax = -eax
 
-nieujemna:
+nonnegative:
 
          push eax  ; eax -> stack
 
@@ -46,14 +46,14 @@ nieujemna:
 
 
 
-         call getaddr3  ; push on the stack the runtime address of format and jump to getaddr
+         call getaddr3  ; push on the stack the runtime address of format3 and jump to getaddr3
 format3:
          db 'modul = %d', 0xA, 0
 getaddr3:
 
 ;        esp -> [format3][eax][addr_a][format][ret]
 
-         call [ebx+3*4]  ; printf("a = %d\n",a)
+         call [ebx+3*4]                            ; printf("a = %d\n",a)
          add esp, 4*4      ; esp = esp + 16
 
 ;        esp -> [ret]

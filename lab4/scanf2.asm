@@ -1,41 +1,90 @@
-assembly
-Copy code
-[bits 32]
+        [bits 32]
+
+;        esp -> [ret]  ; ret - adres powrotu do asmloader
+
+extern   _printf
+extern   _scanf
+extern   _exit
 
 section .data
-format db "Enter a number: ", 0
-input_format db "%d", 0    ; Format dla scanf do czytania liczby ca³kowitej
-number dd 0                ; Miejsce na zmienn¹ gdzie scanf zapisze wartoœæ
+
+format1 db "a = ", 0
+format2 db "%d", 0
+format3 db "a = %d", 0xA, 0
 
 section .text
-global _start
 
-_start:
-    ; Wydrukuj monit
-    push format
-    call [printf]
-    add esp, 4
 
-    ; Przygotowanie argumentów dla scanf - adres zmiennej number
-    push number
-    push input_format
-    call [scanf]
-    ; Czyszczenie stosu po argumentach (2 argumenty po 4 bajty ka¿dy)
-    add esp, 8
+global _main
 
-    ; Wydrukuj wprowadzon¹ wartoœæ
-    push number
-    push format
-    call [printf]
-    ; Czyszczenie stosu po argumentach
-    add esp, 8
+_main:
 
-    ; Zakoñcz program
-    push 0
-    call [exit]
+         push format1
+         
+;        esp -> [format1][ret]
 
-section .bss
-; Tutaj mog¹ byæ zadeklarowane zmienne które bêd¹ u¿ywane
+         call _printf ; printf("a = ")
 
-section .idata
-; Tutaj mog¹ byæ zadeklarowane importowane funkcje
+;        esp -> [a][ret]
+
+         push esp
+
+;        esp -> [addr_a][a][ret]
+
+         push format2
+         
+;        esp -> [format2][addr_a][a][ret]
+
+         call _scanf
+
+         add esp, 2*4
+         
+;        esp -> [a][ret]
+
+         push format3
+         
+;        esp -> [format3][a][ret]
+
+         call _printf
+         
+         add esp, 2*4
+         
+         push 0
+         
+         call _exit
+
+;        esp -> [ret]
+
+         push 0          ; esp -> [0][ret]
+         call [ebx+0*4]  ; exit(0);
+
+; asmloader API
+;
+; ESP wskazuje na prawidlowy stos
+; argumenty funkcji wrzucamy na stos
+; EBX zawiera pointer na tablice API
+;
+; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
+;
+; NR_FUNKCJI:
+;
+; 0 - exit
+; 1 - putchar
+; 2 - getchar
+; 3 - printf
+; 4 - scanf
+;
+; To co funkcja zwróci jest w EAX.
+; Po wywolaniu funkcji sciagamy argumenty ze stosu.
+;
+; https://gynvael.coldwind.pl/?id=387
+
+%ifdef COMMENT
+
+ebx    -> [ ][ ][ ][ ] -> exit
+ebx+4  -> [ ][ ][ ][ ] -> putchar
+ebx+8  -> [ ][ ][ ][ ] -> getchar
+ebx+12 -> [ ][ ][ ][ ] -> printf
+ebx+16 -> [ ][ ][ ][ ] -> scanf
+
+%endif
