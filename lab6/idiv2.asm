@@ -1,52 +1,47 @@
-
          [bits 32]
 
 ;        esp -> [ret]  ; ret - adres powrotu do asmloader
-%define  UINT_MAX 4294967295
 
-%define  INT_MIN -2147483648
-%define  INT_MAX 2147483647
+%define  INT_MAX 4294967295
 
-a        equ -2147483648
-b        equ -1
+a        equ -2147483650
+b        equ -3
 
-;        edi:esi
-;        edx:eax +
-;        -------
-;        edx:eax
+x        equ a % (INT_MAX + 1)
+y        equ a / (INT_MAX + 1)
 
-         mov eax, a  ; eax = a
+         mov eax, x  ; eax = x
+         mov edx, y  ; edx = y
 
-         cdq  ; edx:eax = eax  ; sign extension ; convert doubleword to quadword
+         mov ecx, b  ; ecx = b
 
-         mov esi, eax  ; esi = eax
-         mov edi, edx  ; edi = edx
+;        Dzielenie ze znakiem liczby 64-bitowej edx:eax przez argument
 
-         mov eax, b  ; eax = b
+         idiv ecx    ; eax = edx:eax / ecx  ; iloraz
+                     ; edx = edx:eax % ecx  ; reszta
 
-         cdq  ; edx:eax = eax  ; sign extension ; convert doubleword to quadword
-
-         add eax, esi  ; eax = eax + esi
-         adc edx, edi  ; edx = edx + edi
+;        idiv arg    ; eax = edx:eax / arg  ; iloraz
+                     ; edx = edx:eax % arg  ; reszta
 
          push edx  ; edx -> stack
          push eax  ; eax -> stack
 
 ;        esp -> [eax][edx][ret]
 
-         call getaddr  ; push on the stack the run-time adress of format and jump to getaddr
+         call getaddr  ; push on the stack the runtime address of format and jump to getaddr
 format:
-         db "a + b = %lld", 0xA, 0
+         db "iloraz = %d", 0xA
+         db "reszta = %d", 0xA, 0
 getaddr:
 
 ;        esp -> [format][eax][edx][ret]
 
-         call [ebx+3*4]  ; printf(format, edx:eax)
+         call [ebx+3*4]  ; printf(format, eax, edx);
          add esp, 3*4    ; esp = esp + 12
 
 ;        esp -> [ret]
 
-         push 0          ; esp -> [00 00 00 00][ret]
+         push 0          ; esp -> [0][ret]
          call [ebx+0*4]  ; exit(0);
 
 ; asmloader API
@@ -71,8 +66,6 @@ getaddr:
 ; https://gynvael.coldwind.pl/?id=387
 
 %ifdef COMMENT
-
-Tablica API
 
 ebx    -> [ ][ ][ ][ ] -> exit
 ebx+4  -> [ ][ ][ ][ ] -> putchar

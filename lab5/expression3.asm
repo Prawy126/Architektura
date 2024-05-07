@@ -14,13 +14,13 @@ c        equ 6
          mov eax, b  ; eax = b
          mov esi, c  ; esi = c
   
-         imul esi  ; edx:eax = eax * esi
+         mul esi  ; edx:eax = eax * esi
 
          mov esi, a  ; esi = a
 
          cdq         ; edx:eax = eax  ; signed conversion
 
-         mov edi, 0  ; edi = 0
+         mov edi, 0    ; edi = 0
          add eax, esi  ; eax = eax + esi
          adc edx, edi  ; edx = edx + edi (with carry)
   

@@ -20,7 +20,7 @@ _start:
          add rax, rcx    ; RAX = RAX + RCX
          adc rdx, rbx    ; RDX = RDX + RBX + CF
 
-         lea rdi, [format]   ; Load address of the format string
+         lea rdi, [format]  ; Load address of the format string
          mov rsi, rax        ; Load the lower 4 bytes of the result
          mov rdx, rdx        ; Load the higher 4 bytes of the result
 
