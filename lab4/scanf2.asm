@@ -1,30 +1,29 @@
-        [bits 32]
-
-;        esp -> [ret]  ; ret - adres powrotu do asmloader
+         [bits 32]
 
 extern   _printf
 extern   _scanf
 extern   _exit
 
-section .data
+section  .data
 
-format1 db "a = ", 0
-format2 db "%d", 0
-format3 db "a = %d", 0xA, 0
+format   db "a = ", 0
+format2  db "%d", 0
+format3  db "a = %d",0xA, 0
 
-section .text
+section  .text
 
-
-global _main
+global   _main
 
 _main:
 
-         push format1
+;        esp -> [ret]  ; return address
+
+         push format  ; *(int*)(esp - 4) = format ; esp = esp - 4
          
-;        esp -> [format1][ret]
+;        esp -> [format][ret]  ; return address
 
-         call _printf ; printf("a = ")
-
+         call _printf  ; printf(format);
+         
 ;        esp -> [a][ret]
 
          push esp
@@ -35,9 +34,8 @@ _main:
          
 ;        esp -> [format2][addr_a][a][ret]
 
-         call _scanf
-
-         add esp, 2*4
+         call _scanf  ; scanf("%d", &a);
+         add esp, 2*4  ; esp = esp + 8
          
 ;        esp -> [a][ret]
 
@@ -45,46 +43,22 @@ _main:
          
 ;        esp -> [format3][a][ret]
 
-         call _printf
+         call _printf  ; printf(format3, a);
+         add esp, 2*4  ; esp = esp + 8
          
-         add esp, 2*4
-         
-         push 0
-         
-         call _exit
-
 ;        esp -> [ret]
 
-         push 0          ; esp -> [0][ret]
-         call [ebx+0*4]  ; exit(0);
-
-; asmloader API
-;
-; ESP wskazuje na prawidlowy stos
-; argumenty funkcji wrzucamy na stos
-; EBX zawiera pointer na tablice API
-;
-; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
-;
-; NR_FUNKCJI:
-;
-; 0 - exit
-; 1 - putchar
-; 2 - getchar
-; 3 - printf
-; 4 - scanf
-;
-; To co funkcja zwróci jest w EAX.
-; Po wywolaniu funkcji sciagamy argumenty ze stosu.
-;
-; https://gynvael.coldwind.pl/?id=387
+         push 0      ; esp ->[00 00 00 00][ret]
+         call _exit  ; exit(0);
 
 %ifdef COMMENT
+Kompilacja:
 
-ebx    -> [ ][ ][ ][ ] -> exit
-ebx+4  -> [ ][ ][ ][ ] -> putchar
-ebx+8  -> [ ][ ][ ][ ] -> getchar
-ebx+12 -> [ ][ ][ ][ ] -> printf
-ebx+16 -> [ ][ ][ ][ ] -> scanf
+nasm hello2.asm -o hello2.o -f win32
+ld hello2.o -o hello2.exe c:\windows\system32\msvcrt.dll -m i386pe
 
+lub:
+
+nasm hello2.asm -o hello2.o -f win32
+gcc hello2.o -o hello2.exe -m32
 %endif

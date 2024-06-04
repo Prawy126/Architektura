@@ -8,9 +8,9 @@ b        equ 2
          mov eax, a  ; eax = a
          mov edx, b  ; edx = b
 
-         imul edx  ; edx:eax = eax*edx
+         imul edx  ; edx:eax = eax*edx = a*b
 
-;        mul arg  ; edx:eax = eax*arg
+;        imul arg  ; edx:eax = eax*arg
 
          push edx  ; edx -> stack
          push eax  ; eax -> stack
@@ -19,7 +19,7 @@ b        equ 2
 
          call getaddr  ; push on the stack the runtime address of format and jump to getaddr
 format:
-         db 'iloczyn = %lld', 0xA, 0
+         db 'a*b = %lld', 0xA, 0
 getaddr:
 
 ;        esp -> [format][eax][edx][ret]

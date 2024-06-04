@@ -1,11 +1,16 @@
-[bits 32]
+         [bits 32]
 
 ;        esp -> [ret]  ; ret - return address
 
-a        equ 4
-b        equ 5
-c        equ 6
-d        equ 7
+a        equ 1
+b        equ 2
+c        equ 3
+d        equ 4
+
+;           0:eax
+;         + 0:esi
+;         -------
+;         edi:esi
 
          mov eax, a  ; eax = a
          mov ecx, b  ; ecx = b
@@ -21,7 +26,7 @@ d        equ 7
          mul ecx  ; edx:eax = eax * ecx
 
          add eax, esi  ; eax = eax + esi
-         adc edx, edi  ; edx = edx + edi (with carry)
+         adc edx, edi  ; edx = edx + edi
 
          push edx  ; edx -> stack
          push eax  ; eax -> stack

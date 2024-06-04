@@ -1,15 +1,15 @@
          [bits 32]
 
 ;        esp -> [ret]  ; ret - adres powrotu do asmloader
-         
+
 a        equ 3
 b        equ -6
-         
+
          mov eax, a  ; eax = a
          add eax, b  ; eax = eax + b = a + b
-                       
+
          push eax  ; eax -> stack
-         
+
 ;        esp -> [eax][ret]
 
          call getaddr  ; push on the stack the run-time address of format and jump to getaddr

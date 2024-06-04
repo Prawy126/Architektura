@@ -1,29 +1,31 @@
-        [bits 32]
+         [bits 32]
 
 ;        esp -> [ret]  ; ret - adres powrotu do asmloader
 
 a        equ 4294967295
-b        equ 1
+b        equ 4
+
+;        edx:eax = 0:a
 
          mov eax, a  ; eax = a
-         mov ecx, b  ; edx = b
-
          mov edx, 0  ; edx = 0
-         div ecx     ; eax = edx:eax / ecx
-                     ; edx = edx:eax % ecx
+         
+         mov ecx, b  ; ecx = b
 
-;        div arg     ; eax = edx:eax / arg
-                     ; edx = edx:eax % arg
+;        Dzielenie bez znaku liczby 64-bitowej edx:eax przez argument
 
-                     ; eax - iloraz
-                     ; edx - reszta
+         div ecx     ; eax = edx:eax / ecx  ; iloraz
+                     ; edx = edx:eax % ecx  ; reszta
 
-         push edx
-         push eax
-
+;        div arg     ; eax = edx:eax / arg  ; iloraz
+                     ; edx = edx:eax % arg  ; reszta
+                     
+         push edx  ; edx -> stack
+         push eax  ; eax -> stack
+         
 ;        esp -> [eax][edx][ret]
 
-         call getaddr
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
 format:
          db "iloraz = %u", 0xA
          db "reszta = %u", 0xA, 0
@@ -36,7 +38,7 @@ getaddr:
 
 ;        esp -> [ret]
 
-         push 0          ; esp -> [0][ret]
+         push 0          ; esp -> [00 00 00 00][ret]
          call [ebx+0*4]  ; exit(0);
 
 ; asmloader API
@@ -59,3 +61,15 @@ getaddr:
 ; Po wywolaniu funkcji sciagamy argumenty ze stosu.
 ;
 ; https://gynvael.coldwind.pl/?id=387
+
+%ifdef COMMENT
+
+Tablica API
+
+ebx    -> [ ][ ][ ][ ] -> exit
+ebx+4  -> [ ][ ][ ][ ] -> putchar
+ebx+8  -> [ ][ ][ ][ ] -> getchar
+ebx+12 -> [ ][ ][ ][ ] -> printf
+ebx+16 -> [ ][ ][ ][ ] -> scanf
+
+%endif

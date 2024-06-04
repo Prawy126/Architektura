@@ -2,33 +2,33 @@
 
 ;        esp -> [ret]  ; ret - adres powrotu do asmloader
 
-a        equ 4294967295
-b        equ 2
+a        equ 4
+b        equ -2
 
          mov eax, a  ; eax = a
-         mov edx, b  ; edx = b
+         mov ecx, b  ; ecx = b
+         
+         mul ecx  ; edx:eax = eax*ecx
 
 ;        mul arg  ; edx:eax = eax*arg
 
-         mul edx  ; edx:eax = eax*edx
-
-         push eax
-
+         push eax  ; eax -> stack
+         
 ;        esp -> [eax][ret]
 
-         call getaddr
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
 format:
-         db "iloczyn = %u", 0xA, 0
+         db "Iloczyn = %d", 0xA, 0
 getaddr:
 
 ;        esp -> [format][eax][ret]
 
-         call [ebx+3*4]  ; printf("iloczyn = %u\n", eax);
+         call [ebx+3*4]  ; printf(format, eax);
          add esp, 2*4    ; esp = esp + 8
 
 ;        esp -> [ret]
 
-         push 0          ; esp -> [0][ret]
+         push 0          ; esp -> [00 00 00 00][ret]
          call [ebx+0*4]  ; exit(0);
 
 ; asmloader API
@@ -51,3 +51,15 @@ getaddr:
 ; Po wywolaniu funkcji sciagamy argumenty ze stosu.
 ;
 ; https://gynvael.coldwind.pl/?id=387
+
+%ifdef COMMENT
+
+Tablica API
+
+ebx    -> [ ][ ][ ][ ] -> exit
+ebx+4  -> [ ][ ][ ][ ] -> putchar
+ebx+8  -> [ ][ ][ ][ ] -> getchar
+ebx+12 -> [ ][ ][ ][ ] -> printf
+ebx+16 -> [ ][ ][ ][ ] -> scanf
+
+%endif

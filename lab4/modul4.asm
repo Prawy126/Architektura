@@ -1,83 +1,82 @@
-    [bits 32]
+         [bits 32]
 
-;        esp -> [ret]  ; ret - adres powrotu do asmloader
+extern   _printf
+extern   _scanf
+extern   _exit
 
-         call getaddr  ; push on the stack the runtime address of format and jump to getaddr
-format:
-         db 'liczba = ', 0
-getaddr:
+section  .data
+
+format   db "a = ", 0
+format2  db "%d", 0
+format3  db "modul = %d", 0xA, 0
+
+section  .bss
+
+a:       resb 4
+
+section  .text
+
+global   _main
+
+_main:
+;        esp -> [ret]
+
+         push format
 
 ;        esp -> [format][ret]
 
-         call [ebx+3*4]  ; printf('liczba = ');
-
-
-         push esp  ; esp -> stack
-
-;        esp -> [addr_a][format][ret]
-
-         call getaddr2  ; push on the stack the runtime address of format2 and jump to getaddr2
-format2:
-         db '%d', 0
-getaddr2:
-
-;        esp -> [format2][addr_a][format][ret]
-
-         call[ebx+4*4]   ; scanf(format2, addr_a);
-         
-;        esp -> [a][format2][addr_a][format][ret]
-
-         add esp, 2*4    ; esp = esp + 8
-
-;        esp -> [addr_a][format][ret]
-
-         pop eax
-
-         test eax, eax    ; eax - 0                     ; OF SF ZF AF PF CF affected
-         jge nonnegative  ; jump if greater or equal  ; jump if SF == OF or ZF = 1
-
-         neg eax          ; eax = -eax
-
-nonnegative:
-
-         push eax  ; eax -> stack
-
-;        esp -> [eax][addr_a][format][ret]
-
-
-
-         call getaddr3  ; push on the stack the runtime address of format3 and jump to getaddr3
-format3:
-         db 'modul = %d', 0xA, 0
-getaddr3:
-
-;        esp -> [format3][eax][addr_a][format][ret]
-
-         call [ebx+3*4]                            ; printf("a = %d\n",a)
-         add esp, 4*4      ; esp = esp + 16
+         call _printf  ; printf(format);
+         add esp, 4    ; esp = esp + 4
 
 ;        esp -> [ret]
 
-         push 0          ; esp -> [0][ret]
-         call [ebx+0*4]  ; exit(0);
+         push a
+         
+;        esp -> [addr_a][ret]
 
-; asmloader API
-;
-; ESP wskazuje na prawidlowy stos
-; argumenty funkcji wrzucamy na stos
-; EBX zawiera pointer na tablice API
-;
-; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
-;
-; NR_FUNKCJI:
-;
-; 0 - exit
-; 1 - putchar
-; 2 - getchar
-; 3 - printf
-; 4 - scanf
-;
-; To co funkcja zwróci jest w EAX.
-; Po wywolaniu funkcji sciagamy argumenty ze stosu.
-;
-; https://gynvael.coldwind.pl/?id=387
+         push format2
+
+;        esp -> [format2][addr_a][ret]
+         
+         call _scanf   ; scanf("%d", &a);
+         add esp, 2*4  ; esp = esp + 8
+
+;        esp -> [ret]
+
+         mov eax, dword [a]  ; eax = a
+         mov edx, eax        ; edx = eax = a
+
+         test eax, eax  ; eax AND eax = eax     ; OF SF ZF AF PF CF affected
+         jns nieujemna  ; jump if sign not ser  ; SF = 0
+
+         neg edx  ; edx = -edx
+nieujemna:
+
+         push edx
+
+;        esp -> [edx][ret]
+
+         push format3
+
+;        esp -> [format3][edx][ret]
+
+         call _printf  ; printf(format3, edx);
+         add esp, 2*4    ; esp = esp + 8
+
+;        esp -> [ret]
+
+         push 0      ; esp ->[00 00 00 00][ret]
+         call _exit  ; exit(0);
+
+
+%ifdef COMMENT
+Kompilacja:
+
+nasm hello2.asm -o hello2.o -f win32
+ld hello2.o -o hello2.exe c:\windows\system32\msvcrt.dll -m i386pe
+
+lub:
+
+nasm hello2.asm -o hello2.o -f win32
+gcc hello2.o -o hello2.exe -m32
+%endif

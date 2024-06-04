@@ -1,7 +1,0 @@
-16 bitowy adres = 2^16 czyli 65536 bajtów(64KB)
-20 bitowy adres = 2^20 czyli 1048576 bajtów(1MB)
-24 bitowy adres = 2^24 czyli 16777216 bajtów(16MB)
-32 bitowy adres = 2^32 czyli 4294967296 bajtów(4GB)
-40 bitowy adres = 2^40 czyli 1099511627776 bajtów(1TB)
-48 bitowy adres = 2^48 czyli 281474976710656 bajtów(281TB)
-64 bitowy adres = 2^65 czyli 18446744073709551616 bajtów(16EB)

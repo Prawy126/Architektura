@@ -1,45 +1,63 @@
-        [bits 32]
+         [bits 32]
 
-;        esp -> [ret]  ; ret - adres powrotu do asmloader
-
-x        equ -1
-a        equ 5
-b        equ 15
-
-         mov eax, x    ; eax = x
-         mov edx, a    ; edx = a
-         mov ecx, b    ; ecx = b
-
-         push ecx  ; ecx -> stack
-         push edx  ; edx -> stack
-         push eax  ; eax -> stack
-
-;        esp -> [eax][edx][ecx][ret]
-
-         cmp eax, b     ; eax - b                  ; OF SF ZF AF PF CF affected
-         jg nienalezy  ; jump if greater ; jump if SF == OF or ZF = 1
-         cmp eax, a  ; eax - a
-         jl nienalezy  ; jump if lesser
-
-         call getaddr ; push on the stack the runtime address of format and jump to getaddr
-format:
-         db '%d nalezy do [%d, %d]', 0xA, 0
-
-nienalezy:
-          call getaddr ; push on the stack the runtime address of format and jump to getaddr
-format2:
-          db '%d nie nalezy do [%d, %d]', 0xA, 0
-
-getaddr:
-
-;        esp -> [format1/2][eax][edx][ecx][ret]
-
-         call [ebx+3*4]  ; printf(format, eax, edx, ecx);
-         add esp, 4*4    ; esp = esp + 8
+a        equ 18
+b        equ 99
+x        equ 15
 
 ;        esp -> [ret]
 
-         push 0          ; esp -> [0][ret]
+         mov eax, a  ; eax = a
+         mov ecx, b  ; ecx = b
+         mov edx, x  ; edx = x
+
+         push ecx
+         push eax
+         push edx
+
+;        esp -> [edx][eax][ecx][ret]
+
+         cmp edx, eax  ; cmp x, a
+greater_a:
+
+         je less_b      ; x = a
+         jg less_b      ; x > a
+         jmp not_equal  ; x < a
+less_b:
+
+         cmp edx, ecx  ; cmp x, b
+
+         jg not_equal  ; x > b
+
+         call getaddr1
+format1:
+
+         db "%d nalezy do [%d, %d]", 0xA, 0
+getaddr1:
+
+;        esp -> [format1][edx][eax][ecx][ret]
+
+         call [ebx+3*4]  ; printf(format1, edx, eax, ecx);
+
+         jmp exit
+
+not_equal:
+
+         call getaddr2
+format2:
+
+         db "%d nie nalezy do [%d, %d]", 0xA, 0
+getaddr2:
+
+;        esp -> [format2][edx][eax][ecx][ret]
+
+         call [ebx+3*4]  ; printf(format2, edx, eax, ecx);
+exit:
+
+         add esp, 4*4    ; esp = esp + 16
+
+;        esp -> [ret]
+
+         push 0          ; esp ->[0][ret]
          call [ebx+0*4]  ; exit(0);
 
 ; asmloader API
@@ -64,6 +82,8 @@ getaddr:
 ; https://gynvael.coldwind.pl/?id=387
 
 %ifdef COMMENT
+
+Tablica API
 
 ebx    -> [ ][ ][ ][ ] -> exit
 ebx+4  -> [ ][ ][ ][ ] -> putchar

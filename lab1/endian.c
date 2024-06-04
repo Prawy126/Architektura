@@ -4,27 +4,27 @@
 int main() {
     printf("endian.c\n\n");
     
-    printf("sizeof(char) = %u\n",sizeof(char));
-    printf("sizeof(short) = %u\n\n",sizeof(short));
+    printf("sizeof(char) = %u\n", sizeof(char));
+    printf("sizeof(short) = %u\n\n", sizeof(short));
     
     short x = 1;
     
-    short *w = &x; // w to wskaünik na short (word) 
+    short *w = &x; // w to wskaünik na short (word)
     
     printf("*w = %d\n\n", *w);
     
     char *b = (char*)&x; // b to wskaünik na char (byte)
     
-    // wskaüniki w i b przechowujπ ten sam adres 
+    // wskaüniki w i b przechowujπ ten sam adres
     
-    printf("w = %p\n", *w);
-    printf("b = %p\n\n", *b);
+    printf("w = %p\n", w);
+    printf("b = %p\n\n", b);
     
-    // Test Architektury
+    // test architektury
     
     printf("*b = %d\n", *b);
     printf("*(b+1) = %d\n", *(b+1));
-
+    
     /*
     - little endian
 

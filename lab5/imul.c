@@ -1,8 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 int main() {
     printf("imul.c\n\n");
-
+    
     int a = -65535;
     int b = 2;
 
@@ -12,7 +13,6 @@ int main() {
     printf("b = %d\n\n", b);
 
     printf("iloczyn = %d", result);
-
+    
     return 0;
 }
-

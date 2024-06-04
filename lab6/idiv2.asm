@@ -2,7 +2,7 @@
 
 ;        esp -> [ret]  ; ret - adres powrotu do asmloader
 
-%define  INT_MAX 4294967295
+%define INT_MAX 4294967295
 
 a        equ -2147483650
 b        equ -3
@@ -22,13 +22,13 @@ y        equ a / (INT_MAX + 1)
 
 ;        idiv arg    ; eax = edx:eax / arg  ; iloraz
                      ; edx = edx:eax % arg  ; reszta
-
+                     
          push edx  ; edx -> stack
          push eax  ; eax -> stack
 
 ;        esp -> [eax][edx][ret]
 
-         call getaddr  ; push on the stack the runtime address of format and jump to getaddr
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
 format:
          db "iloraz = %d", 0xA
          db "reszta = %d", 0xA, 0
@@ -41,7 +41,7 @@ getaddr:
 
 ;        esp -> [ret]
 
-         push 0          ; esp -> [0][ret]
+         push 0          ; esp -> [00 00 00 00][ret]
          call [ebx+0*4]  ; exit(0);
 
 ; asmloader API
@@ -66,6 +66,8 @@ getaddr:
 ; https://gynvael.coldwind.pl/?id=387
 
 %ifdef COMMENT
+
+Tablica API
 
 ebx    -> [ ][ ][ ][ ] -> exit
 ebx+4  -> [ ][ ][ ][ ] -> putchar

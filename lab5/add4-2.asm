@@ -2,34 +2,31 @@
 
 ;        esp -> [ret]  ; ret - adres powrotu do asmloader
 
-%define UINT_MAX = 4294967295
+%define  UINT_MAX = 4294967295
 
-a       equ 4294967295
-b       equ 1
+a        equ 4294967295
+b        equ 1
 
 ;        edi:esi
-;        edx:eax +
+;        edx:eax + 
 ;        ---------
-;        eax:eax
+;        edx:eax
 
-;          0:esi
-;          0:eax +
-;        ---------
-;        eax:eax
+;        edi:esi = 0:a
+;        edx:eax = 0:b
 
          mov esi, a  ; esi = a
-         mov eax, b  ; eax = b
-
-         add eax, esi  ; eax = eax + esi
-
          mov edi, 0  ; edi = 0
+
+         mov eax, b  ; eax = b
          mov edx, 0  ; edx = 0
 
-         adc edx, edi  ; edx = edx + edi + cf
-
+         add eax, esi  ; eax = eax + esi
+         adc edx, edi  ; edx = edx + edi + CF
+         
          push edx  ; edx -> stack
          push eax  ; eax -> stack
-         
+
 ;        esp -> [eax][edx][ret]
 
          call getaddr  ; push on the stack the run-time address of format and jump to getaddr
@@ -39,7 +36,7 @@ getaddr:
 
 ;        esp -> [format][eax][edx][ret]
 
-         call [ebx+3*4]  ; printf(format, edx:eax);
+         call [ebx+3*4]  ; printf(format, eax:edx);
          add esp, 3*4    ; esp = esp + 12
 
 ;        esp -> [ret]

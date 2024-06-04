@@ -6,30 +6,30 @@ a        equ 4294967295
 b        equ 2
 
          mov eax, a  ; eax = a
-         mov edx, b  ; edx = b;
-
-         mul edx  ; edx:eax - eax*edx
+         mov ecx, b  ; ecx = b
+         
+         mul ecx  ; edx:eax = eax*ecx
 
 ;        mul arg  ; edx:eax = eax*arg
 
          push edx  ; edx -> stack
          push eax  ; eax -> stack
-
+         
 ;        esp -> [eax][edx][ret]
 
-         call getaddr ; push on the stack the runtime address of format
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
 format:
-         db 'iloczyn = %llu', 0xA, 0
+         db "Iloczyn = %lld", 0xA, 0
 getaddr:
 
 ;        esp -> [format][eax][edx][ret]
 
-         call [ebx+3*4]  ; printf('iloczyn = %llu', edx:eax);
+         call [ebx+3*4]  ; printf(format, edx:eax);
          add esp, 3*4    ; esp = esp + 12
 
 ;        esp -> [ret]
 
-         push 0          ; esp -> [0][ret]
+         push 0          ; esp -> [00 00 00 00][ret]
          call [ebx+0*4]  ; exit(0);
 
 ; asmloader API
@@ -54,6 +54,8 @@ getaddr:
 ; https://gynvael.coldwind.pl/?id=387
 
 %ifdef COMMENT
+
+Tablica API
 
 ebx    -> [ ][ ][ ][ ] -> exit
 ebx+4  -> [ ][ ][ ][ ] -> putchar

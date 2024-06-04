@@ -5,17 +5,17 @@
 a        equ 3
 b        equ 5
 
-         mov ebp, ebx  ; ebp = ebx
-
+         mov ebp, ebx  ; ebp = ebx  ; store ebx
+         
          mov eax, a  ; eax = a
          mov ebx, b  ; ebx = b
          
-         push ebx
-         push eax
+         push ebx  ; ebx -> stack
+         push eax  ; eax -> stack
          
 ;        esp -> [eax][ebx][ret]
 
-         call getaddr
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
 format:
          db "(eax, ebx) = (%d, %d)", 0xA, 0
 getaddr:
@@ -24,36 +24,32 @@ getaddr:
 
          call [ebp+3*4]  ; printf(format, eax, ebx);
          add esp, 3*4    ; esp = esp + 12
-         
+
 ;        esp -> [ret]
-         
+
          mov eax, a  ; eax = a
          mov ebx, b  ; ebx = b
+         
+         xadd eax, ebx  ; (eax, ebx) = (eax + ebx, eax)
 
-         xadd eax, ebx  ; (eax, ebx) = (eax+ebx, eax) <=> tmp = eax
-                        ;                                 eax = eax + ebx
-                        ;                                 ebx = tmp
-
-;        (a, b) => (a + b, a) => (2*a + b, a + b) => (3*a + 2*b, 2*a + b)
-
-         push ebx
-         push eax
+         push ebx  ; ebx -> stack
+         push eax  ; eax -> stack
 
 ;        esp -> [eax][ebx][ret]
 
-         call getaddr2
+         call getaddr2  ; push on the stack the run-time address of format and jump to getaddr
 format2:
          db "(eax, ebx) = (%d, %d)", 0xA, 0
 getaddr2:
 
 ;        esp -> [format2][eax][ebx][ret]
 
-         call [ebp+3*4]  ; printf(format, eax, ebx);
+         call [ebp+3*4]  ; printf(format2, eax, ebx);
          add esp, 3*4    ; esp = esp + 12
 
 ;        esp -> [ret]
 
-         push 0          ; esp -> [0][ret]
+         push 0          ; esp -> [00 00 00 00][ret]
          call [ebp+0*4]  ; exit(0);
 
 ; asmloader API
@@ -76,3 +72,15 @@ getaddr2:
 ; Po wywolaniu funkcji sciagamy argumenty ze stosu.
 ;
 ; https://gynvael.coldwind.pl/?id=387
+
+%ifdef COMMENT
+
+Tablica API
+
+ebx    -> [ ][ ][ ][ ] -> exit
+ebx+4  -> [ ][ ][ ][ ] -> putchar
+ebx+8  -> [ ][ ][ ][ ] -> getchar
+ebx+12 -> [ ][ ][ ][ ] -> printf
+ebx+16 -> [ ][ ][ ][ ] -> scanf
+
+%endif

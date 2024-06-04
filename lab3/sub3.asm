@@ -1,31 +1,40 @@
          [bits 32]
 
 ;        esp -> [ret]  ; ret - adres powrotu do asmloader
-         
+
 a        equ 3
-b        equ -6
-         mov eax, 0
-         add eax, a  ; eax = eax + b = a + b
-         sub eax, b
+b        equ 1
 
-         push eax  ; eax -> stack
-         
-;        esp -> [eax][ret]
+         call getaddr_b
+define_b:
+         dd b  ; [ ][ ][ ][ ]  ; define double word
+getaddr_b:
 
-         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
+;        esp -> [define_b][ret]
+
+         mov eax, a            ; eax = a
+         mov ecx, [esp]        ; ecx = b
+         sub eax, dword [ecx]  ; eax = eax - *(int*)ecx
+
+         push eax
+
+;        esp -> [eax][define_b][ret]
+
+         call getaddr  ; push on the stack the run-time addr of format and jump to get address
 format:
-         db "suma = %d", 0xA, 0
+         db "Wynik odejmowania = %d", 0xA, 0
 getaddr:
 
-;        esp -> [format][eax][ret]
+;        esp -> [format][eax][define_b][ret]
 
-         call [ebx+3*4]  ; printf(format, eax);
-         add esp, 2*4    ; esp = esp + 8
+         call [ebx+3*4]  ; pritnf("roznica = %d\n", a)
+         add esp, 3*4    ; esp = esp + 12
 
-;        esp -> [ret]
+;        esp -> [format]
 
          push 0          ; esp -> [00 00 00 00][ret]
          call [ebx+0*4]  ; exit(0);
+
 
 ; asmloader API
 ;
@@ -49,8 +58,6 @@ getaddr:
 ; https://gynvael.coldwind.pl/?id=387
 
 %ifdef COMMENT
-
-Tablica API
 
 ebx    -> [ ][ ][ ][ ] -> exit
 ebx+4  -> [ ][ ][ ][ ] -> putchar

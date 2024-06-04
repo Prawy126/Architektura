@@ -6,36 +6,45 @@ n        equ 5
 
          mov ecx, n  ; ecx = n
          mov eax, 1  ; eax = 1
-         
-petla    test ecx, ecx  ; ecx & ecx  ; OF=0 SF ZF PF CF=0 affected
-         jz done        ; jump if zero  ; ZF = 1
-         
-         cmp ecx, 1  ; ecx - 1 
-         je done     ; jump if 1
 
-         mul ecx  ; edx:eax = eax*ecx
-         
+         test ecx, ecx  ; ecx & ecx  ; OF=0 SF ZF PF CF=0 affected
+
+         je done  ; jump if equal ; ZF = 1
+
+         cmp ecx, 1  ; ecx & 1  ; OF=0 SF ZF PF CF=0 affected
+
+         je done  ; jump if equal ; ZF = 1
+
+
+petla    mul ecx  ; edx:eax = eax*ecx
+
+;        mul arg  ; edx:eax = eax*arg
+
+         cmp ecx, 1  ; ecx & 1  ; OF=0 SF ZF PF CF=0 affected
+
+         je done  ; jump if not equal  ; ZF = 0
+
          dec ecx  ; ecx--
 
-         loop petla  ; ecx--
+         loop petla
 
-done     push eax  ; eax -> stack
-
+done     push eax
+         
 ;        esp -> [eax][ret]
 
-         call getaddr  ; push on the stack the runtime address of format and jump to getaddr
+         call getaddr  ; push on the stak the run-time address of format and jump to get address
 format:
          db "silnia = %u", 0xA, 0
 getaddr:
 
 ;        esp -> [format][eax][ret]
 
-         call [ebx+3*4]  ; printf("silnia = %u\n", eax);
+         call [ebx+3*4]  ; printf(format, eax);
          add esp, 2*4    ; esp = esp + 8
 
 ;        esp -> [ret]
 
-         push 0          ; esp -> [0][ret]
+         push 0          ; esp -> [00 00 00 00][ret]
          call [ebx+0*4]  ; exit(0);
 
 ; asmloader API

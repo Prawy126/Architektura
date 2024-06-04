@@ -1,111 +1,82 @@
-    [bits 32]
-
-;        esp -> [ret]  ; ret - adres powrotu do asmloader
-
-x        equ 6
+         [bits 32]
 
 a        equ 5
 b        equ 19
-
 c        equ 12
 d        equ 24
-
-         mov eax, x    ; eax = x
-
-         cmp eax, b     ; eax - b          ; OF SF ZF AF PF CF affected
-         jg nieNalezy1  ; jump if greater  ; jump if SF == OF and ZF = 0
-
-         cmp eax, a     ; eax - a          ; OF SF ZF AF PF CF affected
-         jl nieNalezy1  ; jump if less     ; jump if SF != OF1
-
-         jmp sprawdz2
-
-nieNalezy1:
-         cmp eax, d    ; eax - b          ; OF SF ZF AF PF CF affected
-         jg nieNalezyDoObydwu  ; jump if greater  ; jump if SF == OF and ZF = 0
-
-         cmp eax, c    ; eax - a          ; OF SF ZF AF PF CF affected
-         jl nieNalezyDoObydwu  ; jump if less     ; jump if SF != OF1s
-
-         push d    ; b -> stack
-         push c    ; a -> stack
-         push eax  ; eax -> stack
-         push b    ; b -> stack
-         push a    ; a -> stack
-         push eax  ; eax -> stack
-;        esp -> [b][a][eax][ret]
-
-         call getaddr ; push on the stack the runtime address of format and jump to getaddr
-format:
-         db '%d nalezy do  (%d,%d)', 0xA,
-         db '%d nie nalezy do  (%d,%d)', 0xA, 0
-
-sprawdz2:
-         cmp eax, d    ; eax - b          ; OF SF ZF AF PF CF affected
-         jg nieNalezyDoObydwu  ; jump if greater  ; jump if SF == OF and ZF = 0
-
-         cmp eax, c    ; eax - a          ; OF SF ZF AF PF CF affected
-         jl nieNalezyDoObydwu  ; jump if less     ; jump if SF != OF1
-
-         jmp nalezyDoObu
-
-nieNalezy2:
-         cmp eax, b     ; eax - b          ; OF SF ZF AF PF CF affected
-         jg nieNalezy1  ; jump if greater  ; jump if SF == OF and ZF = 0
-
-         cmp eax, a     ; eax - a          ; OF SF ZF AF PF CF affected
-         jl nieNalezy1  ; jump if less     ; jump if SF != OF1
-
-         push d    ; b -> stack
-         push c    ; a -> stack
-         push eax  ; eax -> stack
-         push b    ; b -> stack
-         push a    ; a -> stack
-         push eax  ; eax -> stack
-
-;        esp -> [b][a][eax][ret]
-
-         call getaddr ; push on the stack the runtime address of format2 and jump to getaddr
-format2:
-         db '%d nalezy do  (%d,%d)', 0xA,
-         db '%d nie nalezy do  (%d,%d)', 0xA, 0
-
-nalezyDoObu:
-         push d    ; b -> stack
-         push c    ; a -> stack
-         push eax  ; eax -> stack
-         push b    ; b -> stack
-         push a    ; a -> stack
-         push eax  ; eax -> stack
-
-
-        call getaddr  ; push on the stack the runtime address of format3 and jump to getaddr
-format3:
-         db '%d nalezy do (%d,%d)', 0xA,
-         db '%d nalezy do (%d,%d)', 0xA, 0
-
-nieNalezyDoObydwu:
-        push d    ; b -> stack
-        push c    ; a -> stack
-        push b    ; b -> stack
-        push a    ; a -> stack
-        push eax  ; eax -> stack
-;       esp -> [b][a][eax][ret]
-
-        call getaddr  ; push on the stack the runtime address of format4 and jump to getaddr
-format4:
-         db '%d nie nalezy do (%d,%d) i (%d,%d)', 0xA, 0
-
-getaddr:
-
-;        esp -> [format][eax][edx][ret]
-
-         call [ebx+3*4]  ; printf(format, eax, edx);
-         add esp, 3*4    ; esp = esp + 12
+x        equ 6
 
 ;        esp -> [ret]
 
-         push 0          ; esp -> [0][ret]
+         mov eax, a  ; eax = a
+         mov ecx, b  ; ecx = b
+         mov esi, c  ; esi = c
+         mov edi, d  ; edi = d
+         mov edx, x  ; edx = x
+
+         push edi
+         push esi
+         push ecx
+         push eax
+         push edx
+
+;        esp -> [edx][eax][ecx][esi][edi][ret]
+
+greater_a:
+         cmp edx, eax  ; cmp x, a
+
+         jg less_b      ; x > a
+         je not_equal   ; x = a
+         jmp not_equal  ; x < a
+less_b:
+
+         cmp edx, ecx  ; cmp x, b
+
+         jg not_equal  ; x > b
+         je not_equal  ; x = b
+greater_c:
+
+         cmp edx, esi  ; cmp x, c
+
+         jg less_d      ; x > c
+         je not_equal   ; x = c
+         jmp not_equal  ; x < c
+less_d:
+
+         cmp edx, edi  ; cmp x, d
+
+         jg not_equal  ; x > d
+         je not_equal  ; x = d
+
+         call getaddr1
+format1:
+
+         db "%d nalezy do (%d, %d) i (%d, %d)", 0xA, 0
+getaddr1:
+
+;        esp -> [format1][edx][eax][ecx][esi][edi][ret]
+
+         call [ebx+3*4]  ; printf(format, edx, eax, ecx, esi, edi);
+
+         jmp exit
+
+not_equal:
+
+         call getaddr2
+format2:
+
+         db "%d nie nalezy do (%d, %d) i (%d, %d)", 0xA, 0
+getaddr2:
+
+;        esp -> [format2][edx][eax][ecx][esi][edi][ret]
+
+         call [ebx+3*4]  ; printf(format, eax, edx);
+exit:
+         add esp, 6*4    ; esp = esp + 24
+
+;        esp -> [ret]
+
+         push 0          ; esp ->[0][ret]
          call [ebx+0*4]  ; exit(0);
 
 ; asmloader API
@@ -130,6 +101,8 @@ getaddr:
 ; https://gynvael.coldwind.pl/?id=387
 
 %ifdef COMMENT
+
+Tablica API
 
 ebx    -> [ ][ ][ ][ ] -> exit
 ebx+4  -> [ ][ ][ ][ ] -> putchar

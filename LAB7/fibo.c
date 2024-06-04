@@ -36,29 +36,14 @@ return r2;
 }
 
 /*
-r0  r1
-|---|
-0   1   2   3   4   5   6    indeksy
-1   1   2   3   5   8   13   wartości
-|   |---|
-pom r0  r1
+- dokonaj analizy wywołanai fibo1(4)
 
-Przesunięcie ramki w prawo:
-
-pom = r0
-r0 = r1
-r1 = pom + r0
-*/
-
-/*
-- dokonaj analizy wywołania fibo1(4)
-
-* fibo1(4) =
+* fibo(4) =
   r0 = 1
   r1 = 1
   r2 = 2
   
-  4 == 0  false
+  4 == 0  false 
   4 == 1  false
   4 == 2  false
   
@@ -74,21 +59,21 @@ r1 = pom + r0
    
   3 <= 2   false
   
-  return r2 = 5
+  return r2 = 5 
   
-- narysuj graf obliczeń dla fibo1(4)
+- narysuj graf obliczeń dla fibo1(4)  
 
 f(0)  f(1)    f(2)
          \   /  |
           f(3)  |
              \  |
-              f(4)  
+              f(4)
 */
 
 int main() {
     printf("fibo.c\n\n");
     
-    int n = 6;
+    int n = 4;
     
     printf("fibo1(%d) = %d\n", n, fibo1(n));
     

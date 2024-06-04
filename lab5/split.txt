@@ -1,0 +1,34 @@
+* Liczba dwucyfrowa ba
+
+ba = a + b*10 = a + b*(9 + 1)
+
+a - mlodsza cyfra
+b - starsza cyfra
+
+a = ba % (9 + 1) = ba % 10
+b = ba / (9 + 1) = ba / 10
+
+Przyklad:
+
+ba = 35 = 5 + 3*10
+
+5 - mlodsza cyfra
+3 - starsza cyfra
+
+a = 35 % (9 + 1) = 35 % 10 = 5
+b = 35 / (9 + 1) = 35 / 10 = 3
+
+* Liczba 64 bitowa w rejestrach edx:eax
+
+UINT_MAX = 4294967295
+
+edx:eax = eax + edx*2^32 = eax + edx*4294967296 = eax + edx*(UINT_MAX + 1)
+
+eax - mlodszy rejestr
+edx - starszy rejestr
+
+edx:eax = liczba
+
+eax = liczba % (UINT_MAX + 1)
+edx = liczba / (UINT_MAX + 1)
+

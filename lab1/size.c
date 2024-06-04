@@ -1,9 +1,8 @@
-#include<stdio.h>
-#include<stdlib.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-int main(){
+int main() {
     printf("size.c\n\n");
-    
     
     printf("sizeof(char) = %lu\n", sizeof(char));
     printf("sizeof(short) = %lu\n", sizeof(short));
@@ -15,10 +14,8 @@ int main(){
     printf("\n");
     
     printf("sizeof(float) = %lu\n", sizeof(float));
-    printf("sizeof(double) = %lu\n", sizeof(double));  
-    printf("sizeof(long double) = %lu\n", sizeof(long double));    
-    
-    
+    printf("sizeof(double) = %lu\n", sizeof(double));
+    printf("sizeof(long double) = %lu\n", sizeof(long double));
     
     return 0;
 }

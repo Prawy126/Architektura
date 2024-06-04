@@ -1,4 +1,4 @@
-[bits 64]
+         [bits 64]
 
 a        equ 4294967295
 b        equ 1
@@ -34,3 +34,36 @@ _start:
          mov rax, 60      ; System call number for exit (60)
          xor rdi, rdi     ; Exit status (0)
          syscall
+
+; asmloader API
+;
+; ESP wskazuje na prawidlowy stos
+; argumenty funkcji wrzucamy na stos
+; EBX zawiera pointer na tablice API
+;
+; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
+;
+; NR_FUNKCJI:
+;
+; 0 - exit
+; 1 - putchar
+; 2 - getchar
+; 3 - printf
+; 4 - scanf
+;
+; To co funkcja zwróci jest w EAX.
+; Po wywolaniu funkcji sciagamy argumenty ze stosu.
+;
+; https://gynvael.coldwind.pl/?id=387
+
+%ifdef COMMENT
+
+Tablica API
+
+rbx    -> [ ][ ][ ][ ] -> exit
+rbx+8  -> [ ][ ][ ][ ] -> putchar
+rbx+16  -> [ ][ ][ ][ ] -> getchar
+rbx+24 -> [ ][ ][ ][ ] -> printf
+rbx+32 -> [ ][ ][ ][ ] -> scanf
+
+%endif

@@ -1,42 +1,69 @@
+         [bits 64]
 
-[bits 64]
-
-; Definitions for variables a and b
-a        equ 4294967295  ; Value of variable 'a'
-b        equ 1            ; Value of variable 'b'
+a        equ 4294967295
+b        equ 1
 
 section .data
 format:
-    db 'suma = %lld', 0xA, 0    ; Output format for printf, changed %llu to %lld for signed 64-bit integers
+         db 'suma = %llu', 0xA, 0
 
 section .text
 global _start
 
 _start:
-    mov eax, dword a        ; Move the value of 'a' into EAX (32-bit)
-    cdqe                     ; Convert doubleword (32-bit) in EAX to quadword (64-bit) in RAX
-    mov ecx, dword b        ; Move the value of 'b' into ECX (32-bit)
-    cdqe                     ; Convert doubleword (32-bit) in ECX to quadword (64-bit) in RCX
 
-    add rax, rcx            ; Add 'a' to 'b', result in RAX
+         mov eax, a      ; RAX = a
+         xor rdx, rdx    ; Zero-extend RAX to 64 bits (RDX:RAX = a)
+         mov ecx, b      ; RCX = b
+         xor rbx, rbx    ; Zero-extend RCX to 64 bits (RBX:RCX = b)
 
-    ; Output the result to stdout using printf from asmloader
-    push rax                ; Push the result onto the stack
-    push format             ; Push the address of the format string onto the stack
-    mov ebx, eax            ; Set the API pointer to ebx
-    call [ebx + 3*4]        ; Call the printf function
+         add rax, rcx    ; RAX = RAX + RCX
+         adc rdx, rbx    ; RDX = RDX + RBX + CF
 
-    ; Call the exit function from asmloader
-    mov ebx, eax            ; Set the API pointer to ebx
-    call [ebx]              ; Call the exit function
+         lea rdi, [format]   ; Load address of the format string
+         mov rsi, rax        ; Load the lower 4 bytes of the result
+         mov rdx, rdx        ; Load the higher 4 bytes of the result
 
-; Usage of asmloader:
-; - After setting the API pointer to ebx, we call functions using call [ebx + FUNCTION_NUMBER*4]
-; - Functions return a value in the EAX register
-; - After calling a function, arguments should be popped off the stack
-; - FUNCTION_NUMBER:
-;   - 0 - exit
-;   - 1 - putchar
-;   - 2 - getchar
-;   - 3 - printf
-;   - 4 - scanf
+         ; Write the result to stdout
+         mov rax, 1       ; System call number for write (1)
+         mov rdi, 1       ; File descriptor for stdout (1)
+         mov rdx, 21      ; Length of the output string
+         syscall
+
+         ; Exit
+         mov rax, 60      ; System call number for exit (60)
+         xor rdi, rdi     ; Exit status (0)
+         syscall
+
+; asmloader API
+;
+; ESP wskazuje na prawidlowy stos
+; argumenty funkcji wrzucamy na stos
+; EBX zawiera pointer na tablice API
+;
+; call [ebx + NR_FUNKCJI*4] ; wywolanie funkcji API
+;
+; NR_FUNKCJI:
+;
+; 0 - exit
+; 1 - putchar
+; 2 - getchar
+; 3 - printf
+; 4 - scanf
+;
+; To co funkcja zwróci jest w EAX.
+; Po wywolaniu funkcji sciagamy argumenty ze stosu.
+;
+; https://gynvael.coldwind.pl/?id=387
+
+%ifdef COMMENT
+
+Tablica API
+
+rbx    -> [ ][ ][ ][ ] -> exit
+rbx+8  -> [ ][ ][ ][ ] -> putchar
+rbx+16  -> [ ][ ][ ][ ] -> getchar
+rbx+24 -> [ ][ ][ ][ ] -> printf
+rbx+32 -> [ ][ ][ ][ ] -> scanf
+
+%endif

@@ -1,14 +1,14 @@
-[bits 32]
+         [bits 32]
 
 ;        esp -> [ret]  ; ret - adres powrotu do asmloader
 
-a        equ 5
-b        equ 10
+a        equ -4
+b        equ 6
 
-         mov eax, a ; eax = a
-
-         call print ; fastcall
-raddr:              ; return address
+         mov eax, a  ; eax = a
+         
+         call print  ; fastcall
+raddr:               ; return address
 
 ;        esp -> [ret]
 
@@ -18,22 +18,22 @@ raddr:              ; return address
 print:
 
 ;        esp -> [raddr][ret]
-         
+
          push eax  ; eax -> stack
-         mov eax, b ; eax = b
+         mov eax, b  ; eax = b
          push eax  ; eax -> stack
          
 ;        esp -> [eax][eax][raddr][ret]
 
          call getaddr  ; push on the stack the run-time address of format and jump to getaddr
 format:
-         db "a = %d, b = %d", 0xA, 0
+         db "b = %d, a = %d", 0xA, 0
 getaddr:
 
-;        esp -> [eax][eax][raddr][ret]
+;        esp -> [format][eax][eax][raddr][ret]
 
          call [ebx+3*4]  ; printf(format, a, b);
-         add esp, 2*4    ; esp = esp + 8   
+         add esp, 2*4    ; esp = esp + 8
 
 ;        esp -> [raddr][ret]
 

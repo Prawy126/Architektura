@@ -1,7 +1,7 @@
-
          [bits 32]
 
 ;        esp -> [ret]  ; ret - adres powrotu do asmloader
+
 %define  UINT_MAX 4294967295
 
 %define  INT_MIN -2147483648
@@ -11,37 +11,41 @@ a        equ -2147483648
 b        equ -1
 
 ;        edi:esi
-;        edx:eax +
-;        -------
+;        edx:eax + 
+;        ---------
 ;        edx:eax
 
-         mov eax, a  ; eax = a
+;        cdq  ; edx:eax = eax  ; sign extension ; convert doubleword to quadword
 
-         cdq  ; edx:eax = eax  ; sign extension ; convert doubleword to quadword
+         mov eax, a  ; eax = a
+         mov ecx, b  ; ecx = b
+         
+         cdq  ; edx:eax = eax  ; sign extension
 
          mov esi, eax  ; esi = eax
          mov edi, edx  ; edi = edx
-
-         mov eax, b  ; eax = b
-
-         cdq  ; edx:eax = eax  ; sign extension ; convert doubleword to quadword
-
+         
+         mov eax, ecx  ; eax = ecx
+         
+         cdq  ; edx:eax = eax  ; sign extension
+         
+         clc           ; CF = 0
          add eax, esi  ; eax = eax + esi
-         adc edx, edi  ; edx = edx + edi
+         adc edx, edi  ; edx = edx + edi + CF
 
          push edx  ; edx -> stack
          push eax  ; eax -> stack
 
 ;        esp -> [eax][edx][ret]
 
-         call getaddr  ; push on the stack the run-time adress of format and jump to getaddr
+         call getaddr  ; push on the stack the run-time address of format and jump to getaddr
 format:
-         db "a + b = %lld", 0xA, 0
+         db "suma = %lld", 0xA, 0
 getaddr:
 
 ;        esp -> [format][eax][edx][ret]
 
-         call [ebx+3*4]  ; printf(format, edx:eax)
+         call [ebx+3*4]  ; printf(format, eax:edx);
          add esp, 3*4    ; esp = esp + 12
 
 ;        esp -> [ret]

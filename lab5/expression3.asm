@@ -1,10 +1,10 @@
-[bits 32]
+         [bits 32]
 
-;       esp -> [ret]  ; ret - return address
+;        esp -> [ret]  ; ret - return address
 
 a        equ 4
-b        equ -5
-c        equ 6
+b        equ 5
+c        equ -7
 
 ;          0:eax
 ;        + 0:esi
@@ -18,11 +18,11 @@ c        equ 6
 
          mov esi, a  ; esi = a
 
-         cdq         ; edx:eax = eax  ; signed conversion
+         cdq  ; edx:eax = eax ; sign extension
 
          mov edi, 0    ; edi = 0
          add eax, esi  ; eax = eax + esi
-         adc edx, edi  ; edx = edx + edi (with carry)
+         adc edx, edi  ; edx = edx + edi
   
          push edx  ; edx -> stack
          push eax  ; eax -> stack

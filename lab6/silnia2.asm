@@ -2,7 +2,7 @@
 
 ;        esp -> [ret]  ; ret - adres powrotu do asmloader
 
-n        equ 3
+n        equ 5
 
          mov ecx, n  ; ecx = 14
 

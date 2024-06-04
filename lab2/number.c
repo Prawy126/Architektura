@@ -1,35 +1,40 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
-// Funkcja wyliczająca wartość wielomianu w sposób klasyczny
+/*zadanie domowe implementacje funkcji horner i reprezentacje 1 i 2-u bajtowe*/
+
 int polinomial(unsigned char *p, int n) {
-    int result = 0;
-    int i;
-    for (i = 0; i < n; i++) {
-        result += p[i] << (8 * i);
-    }
-    return result;
+	unsigned int suma = 0;
+	
+	int i;
+	for (i = 0; i < n; i++) {
+		suma = suma + *(p + i) * pow(256, i);
+	}
+	
+	return suma;
 }
 
-// Funkcja wyliczająca wartość wielomianu schematem Hornera
 int horner(unsigned char *p, int n) {
-    int result = 0;
-    int i;
-    for (i = n - 1; i >= 0; i--) {
-        result = (result << 8) | p[i];
-    }
-    return result;
+	unsigned int dlugosc = sizeof(p) / 4 - 1;
+	unsigned int suma = p[dlugosc];
+	
+	for (int i = dlugosc - 2; i >= 0; i--) {
+		suma = p[i] + i * suma;
+	}
+	
+	return suma;
 }
 
 int main() {
-    unsigned char number1[] = {0x00, 0x00, 0x01, 0x00}; // 4 bajty, liczba 256
-    unsigned char number2[] = {0x00, 0x00, 0xFF};       // 3 bajty, liczba 255
-
-    printf("number(0x0061FE94, 4) = %d\n", polinomial(number1, 4));
-    printf("number(0x0061FE94, 4) = %d\n", horner(number1, 4));
-
-    printf("number(0x0061FE94, 3) = %d\n", polinomial(number2, 3));
-    printf("number(0x0061FE94, 3) = %d\n", horner(number2, 3));
-
+    printf("number.c\n\n");
+    
+    char x[] = {4, 1, 0, 0};
+    
+    int n = sizeof(x);
+    
+    printf("number(%p, %u) = %u\n\n", x, n, polinomial(x, n));
+    printf("horner(%p, %u) = %u\n", x, n, polinomial(x, n));
+    
     return 0;
 }
-

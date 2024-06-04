@@ -4,10 +4,10 @@
 
 a        equ -4
 
-         mov eax, a ; eax = a
-
-         call print ; fastcall
-raddr:              ; return address
+         mov eax, a  ; eax = a
+         
+         call print  ; fastcall
+raddr:               ; return address
 
 ;        esp -> [ret]
 
@@ -17,7 +17,7 @@ raddr:              ; return address
 print:
 
 ;        esp -> [raddr][ret]
-         
+
          push eax  ; eax -> stack
          
 ;        esp -> [eax][raddr][ret]
@@ -27,14 +27,14 @@ format:
          db "a = %d", 0xA, 0
 getaddr:
 
-;        esp -> [eax][raddr][ret]
+;        esp -> [format][eax][raddr][ret]
 
          call [ebx+3*4]  ; printf(format, a);
-         add esp, 2*4    ; esp = esp + 8   
+         add esp, 2*4    ; esp = esp + 8
 
 ;        esp -> [raddr][ret]
 
-         ret  ; retun to raddr
+         ret  ; return to raddr
 
 ; asmloader API
 ;

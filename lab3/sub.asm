@@ -2,8 +2,8 @@
 
 ;        esp -> [ret]  ; ret - adres powrotu do asmloader
 
-a        equ 5
-b        equ 10
+a        equ 3
+b        equ -6
 
          mov eax, a    ; eax = a
          mov ecx, b    ; ecx = b
