@@ -202,8 +202,8 @@ done     ret
 
 Kompilacja:
 
-nasm gra1.asm -o gra1.o -f win32
-ld gra1.o -o gra1.exe c:\windows\system32\msvcrt.dll -m i386pe
+nasm gra-exe.asm -o gra.o -f win32
+ld gra.o -o gra.exe c:\windows\system32\msvcrt.dll -m i386pe
 
 lub:
 
